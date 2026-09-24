@@ -3,7 +3,7 @@
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 pub const UNIT_NAME: &str = "remote-control-conductor-server.service";
 
@@ -79,6 +79,9 @@ fn systemctl(args: &[&str]) -> io::Result<()> {
 pub fn legacy_active() -> bool {
     Command::new("systemctl")
         .args(["--user", "--quiet", "is-active", LEGACY_UNIT_NAME])
+        // Quiet where there's no systemd, as in a container.
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
         .status()
         .is_ok_and(|status| status.success())
 }
