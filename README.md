@@ -31,6 +31,20 @@ From [Releases](https://github.com/marcusadolfsson/ai-profiles-remote/releases/l
   ai-profiles-server setup
   ```
 
+## How this differs
+
+There are good tools near each half of this, but I didn't find one that does both, or that moves a session between accounts:
+
+- **Multi-account switchers** ([clauth](https://github.com/uwuclxdy/clauth), [ClaudeCodeMultiAccounts](https://github.com/Leuconoe/ClaudeCodeMultiAccounts), and many small `CLAUDE_CONFIG_DIR` switchers) change which account a terminal uses. They don't know about sessions, and don't move one from account to account.
+- **Session managers and remotes** ([happy](https://github.com/slopus/happy), [Claude Code UI](https://github.com/siteboon/claudecodeui), [claude-squad](https://github.com/smtg-ai/claude-squad), [ccmanager](https://github.com/kbwo/ccmanager), [hive](https://github.com/latagore/hive), [remy](https://github.com/padamchopra/remy)) run or mirror sessions, mostly for one account, and mostly through a UI or relay of their own.
+
+What this adds:
+
+1. **One place for accounts and their sessions,** on the Mac and on a server, side by side in the same sidebar.
+2. **Moving a session between accounts,** with its transcript, subagents and file history, project memory merged (you decide what both sides changed), the desktop app's own session list, and archive and restore.
+3. **Remote Control, not another client.** Sessions on the server start with Claude's own Remote Control on, so you work with them in the official Claude apps on your phone, another Mac or the web. ai-profiles starts, stops, restarts, renames and moves them, and shows their window when one needs an answer.
+4. **Built for a Linux host:** a small server with pinned TLS, reachable over Tailscale or WireGuard, running as a systemd service that brings sessions back after a reboot.
+
 ## The changes
 
 ### [#47](https://github.com/bartekczyz/ai-profiles/pull/47) — Security hardening *(merged)*
