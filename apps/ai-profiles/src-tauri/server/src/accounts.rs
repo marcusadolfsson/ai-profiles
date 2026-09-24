@@ -132,7 +132,10 @@ pub fn discover(config: &Config) -> Vec<AccountDir> {
         .filter(|entry| entry.path().is_dir())
         .filter_map(|entry| {
             let name = entry.file_name().to_str()?.to_owned();
-            (!name.starts_with('.') && name != DEFAULT_NAME).then(|| AccountDir {
+            // Only a name an account could have been given: not a lock
+            // folder (`marcus2.lock`), a hidden one, or anything a path
+            // built from it could trip on.
+            valid_new_name(&name).then(|| AccountDir {
                 name,
                 dir: entry.path(),
                 is_default: false,
@@ -302,7 +305,14 @@ mod tests {
     fn lists_default_first_then_named_accounts_skipping_dot_folders() {
         let home = tempfile::tempdir().unwrap();
         let base = home.path().join(".claude-accounts");
-        for name in ["work", "alpha", ".trash", ".claudemulti"] {
+        for name in [
+            "work",
+            "alpha",
+            ".trash",
+            ".claudemulti",
+            "work.lock",
+            "odd name",
+        ] {
             fs::create_dir_all(base.join(name)).unwrap();
         }
         fs::write(base.join("not-a-dir"), "").unwrap();

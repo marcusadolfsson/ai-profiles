@@ -691,6 +691,11 @@ pub async fn start_login(
     Ok(started)
 }
 
+/// How long handing over a sign-in code may take: the host gives claude up to
+/// 30s to finish signing in, then up to 15s to confirm it, so the usual 30s
+/// would give up while it's still answering.
+const SUBMIT_LOGIN_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(60);
+
 /// Hand the code from the sign-in page to the host.
 pub async fn submit_login(
     list: &HostList,
@@ -700,16 +705,18 @@ pub async fn submit_login(
     code: &str,
 ) -> AppResult<RemoteAccount> {
     let path = format!("/v1/logins/{}/code", login_segment(login_id)?);
-    post(
-        list,
-        secrets,
-        host_id,
-        &path,
-        &LoginCodeRequest {
-            code: code.trim().to_owned(),
-        },
-    )
-    .await
+    let (host, client) = connect(list, secrets, host_id)?;
+    let answer = client
+        .patient(SUBMIT_LOGIN_TIMEOUT)
+        .post(
+            &path,
+            &LoginCodeRequest {
+                code: code.trim().to_owned(),
+            },
+        )
+        .await?;
+    remember(list, &host, &answer.address);
+    Ok(answer.value)
 }
 
 pub async fn cancel_login(

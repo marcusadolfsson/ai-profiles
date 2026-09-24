@@ -190,6 +190,8 @@ impl Logins {
             return Err(LoginError::BadCode);
         }
         let login = self.active().remove(id).ok_or(LoginError::NotFound)?;
+        // What claude prints from here on is its answer to the code.
+        let before = text(&login.output).len();
         {
             let mut stdin = login.stdin.lock().unwrap_or_else(PoisonError::into_inner);
             let Some(mut pipe) = stdin.take() else {
@@ -199,22 +201,40 @@ impl Logins {
             let _ = pipe.flush();
             // Dropped: the command sees end of input after the code.
         }
+        // claude exits once it has signed in. A code it turns down it says so
+        // about, and then waits for another, input closed or not: that is
+        // an answer too, not something to wait out.
         let deadline = Instant::now() + FINISH_TIMEOUT;
-        let status = loop {
+        let (status, rejected) = loop {
             if let Some(status) = exited(&login) {
-                break Some(status);
+                break (Some(status), false);
+            }
+            if rejected_code(text(&login.output).get(before..).unwrap_or_default()) {
+                break (None, true);
             }
             if Instant::now() > deadline {
-                break None;
+                break (None, false);
             }
             thread::sleep(Duration::from_millis(100));
         };
         if status.is_some_and(|status| status.success()) {
+            eprintln!("signed in {}", login.account);
             return Ok(login.account.clone());
         }
         let printed = last_line(&text(&login.output));
+        eprintln!(
+            "sign-in for {} didn't finish: {}",
+            login.account,
+            if rejected {
+                "the code was turned down"
+            } else if status.is_none() {
+                "claude was still running"
+            } else {
+                "claude exited"
+            }
+        );
         Err(LoginError::Failed {
-            message: if printed.contains("Login failed") || printed.contains("400") {
+            message: if rejected || printed.contains("Login failed") || printed.contains("400") {
                 "The code wasn't accepted. Codes work once and only for a few minutes: sign in again for a new one.".into()
             } else if status.is_none() {
                 "claude didn't finish signing in. Sign in again.".into()
@@ -243,6 +263,14 @@ fn text(output: &Mutex<String>) -> String {
         .lock()
         .unwrap_or_else(PoisonError::into_inner)
         .clone()
+}
+
+/// Pure: whether what claude printed after a code says it turned the code
+/// down.
+fn rejected_code(printed: &str) -> bool {
+    ["Invalid code", "Login failed", "OAuth error"]
+        .iter()
+        .any(|sign| printed.contains(sign))
 }
 
 fn exited(login: &Login) -> Option<std::process::ExitStatus> {
@@ -315,6 +343,16 @@ pub fn login_cwd(state_dir: &Path) -> PathBuf {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn knows_when_claude_turned_the_code_down() {
+        assert!(rejected_code(
+            "Invalid code. Please make sure the full code was copied.\nPaste code here if prompted > "
+        ));
+        assert!(rejected_code("Login failed: 400"));
+        assert!(!rejected_code(""));
+        assert!(!rejected_code("Login successful.\n"));
+    }
 
     #[test]
     fn finds_the_sign_in_link_in_what_claude_prints() {
