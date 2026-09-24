@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.5.0](https://github.com/marcusadolfsson/remote-control-conductor/releases/tag/v0.5.0) (2026-09-24)
+
+The first release as Remote Control Conductor, formerly ai-profiles-remote. The releases below it are ai-profiles', which this app is based on.
+
+### Added
+
+* **remote:** manage Claude Code sessions on Linux hosts, with Remote Control on: start, stop, restart, rename, move between accounts, archive and restore, and sign accounts in from your Mac's browser
+* **remote:** flag sessions that wait on a restart to take an installed Claude Code update, and restart them all at once
+* **mcp:** an MCP server in the app, so Claude Desktop and Claude Code can manage your profiles and sessions (Settings → MCP server)
+* **rename:** the app is Remote Control Conductor, and the server remote-control-conductor-server; setting the server up again moves an ai-profiles-server install over, pairings included
+
 ## [1.3.1](https://github.com/bartekczyz/ai-profiles/compare/v1.3.0...v1.3.1) (2026-09-22)
 
 
