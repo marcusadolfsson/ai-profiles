@@ -750,6 +750,8 @@ function RemoteSessions({ host, account, email, home, onResult }: RemoteSessions
   const [expanded, setExpanded] = useState(false)
   const list = sessions.data ?? []
   const running = list.filter((session) => session.running)
+  // Sessions on an older claude than the host now has installed.
+  const updating = running.filter((session) => session.updatePending).length
   const previous = list.filter((session) => !session.running)
   const visiblePrevious = expanded ? previous : previous.slice(0, collapsedCount)
   const locked = busy !== null || restartingAll !== null
@@ -809,16 +811,25 @@ function RemoteSessions({ host, account, email, home, onResult }: RemoteSessions
           {running.length > 0 ? (
             <div className="mb-4">
               <SessionsHeading title="Running" count={running.length}>
-                {running.length > 1 ? (
+                {running.length > 1 || updating > 0 ? (
                   <Button
                     variant="ghost"
                     size="sm"
                     leadingIcon={<RotateCw className="h-3.5 w-3.5" />}
                     disabled={locked}
-                    title="Stop every running session and start it again on the host's current claude"
+                    title={
+                      updating > 0
+                        ? `Stop every running session and start it again on the host's current claude: ${updating} of them run an older one`
+                        : "Stop every running session and start it again on the host's current claude"
+                    }
+                    className={updating > 0 ? 'text-amber hover:text-amber' : undefined}
                     onClick={() => setPending({ kind: 'restartAll', sessions: running })}
                   >
-                    {restartingAll ? `Restarting ${restartingAll.done + 1} of ${restartingAll.total}…` : 'Restart all'}
+                    {restartingAll
+                      ? `Restarting ${restartingAll.done + 1} of ${restartingAll.total}…`
+                      : updating > 0
+                        ? `Restart all · ${updating} to update`
+                        : 'Restart all'}
                   </Button>
                 ) : null}
               </SessionsHeading>
@@ -1279,10 +1290,21 @@ function RemoteSessionRow({
             Waiting for you
           </span>
         ) : session.running ? (
-          <span className="inline-flex shrink-0 items-center gap-1 text-meta text-muted-strong">
-            <StatusDot tone={busy === 'stop' ? 'neutral' : 'success'} />
-            {busy === 'stop' ? 'Stopping…' : tmux ? 'Open' : 'Open outside tmux'}
-          </span>
+          <>
+            <span className="inline-flex shrink-0 items-center gap-1 text-meta text-muted-strong">
+              <StatusDot tone={busy === 'stop' ? 'neutral' : 'success'} />
+              {busy === 'stop' ? 'Stopping…' : tmux ? 'Open' : 'Open outside tmux'}
+            </span>
+            {session.updatePending && busy !== 'stop' ? (
+              <span
+                className="inline-flex shrink-0 items-center gap-1 text-meta text-amber"
+                title={`It runs Claude Code ${session.claudeVersion ?? 'an older version'}, and a newer one is installed on the host. Restart it to update.`}
+              >
+                <RotateCw aria-hidden className="h-3 w-3" />
+                Restart to update
+              </span>
+            ) : null}
+          </>
         ) : null
       }
       folder={session.cwd}
@@ -1356,12 +1378,14 @@ function RemoteSessionRow({
               size="sm"
               aria-label="Restart"
               title={
-                tmux
-                  ? "Restart: stop it and start it again on the host's current claude"
-                  : "Restart: stop it and start it again in tmux, on the host's current claude"
+                session.updatePending
+                  ? `Restart to update: stop it and start it again on the newer claude installed on the host (it runs ${session.claudeVersion ?? 'an older one'})`
+                  : tmux
+                    ? "Restart: stop it and start it again on the host's current claude"
+                    : "Restart: stop it and start it again in tmux, on the host's current claude"
               }
               disabled={disabled}
-              className={rowActionClasses}
+              className={cn(rowActionClasses, session.updatePending && 'text-amber hover:text-amber')}
               onClick={onRestart}
             >
               <RotateCw aria-hidden className={cn('h-3.5 w-3.5', busy === 'restart' && 'animate-spin')} />

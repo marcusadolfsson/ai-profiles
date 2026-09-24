@@ -198,13 +198,45 @@ fn summary(
         bridge_session_id: live.and_then(|entry| entry.bridge_session_id.clone()),
         waiting: false,
         empty: info.is_empty(),
+        claude_version: live.and_then(|entry| entry.version.clone()),
+        update_pending: false,
         id,
+    }
+}
+
+/// Pure: whether version `installed` is newer than `running`, comparing
+/// their dotted numbers (`2.1.281` > `2.1.280`, `2.10.0` > `2.9.9`). Either
+/// one unreadable is not newer.
+pub fn newer_version(installed: &str, running: &str) -> bool {
+    fn numbers(version: &str) -> Option<Vec<u64>> {
+        version
+            .trim()
+            .split(['.', '-', ' '])
+            .take_while(|part| !part.is_empty() && part.bytes().all(|b| b.is_ascii_digit()))
+            .map(|part| part.parse().ok())
+            .collect::<Option<Vec<u64>>>()
+            .filter(|parts| !parts.is_empty())
+    }
+    match (numbers(installed), numbers(running)) {
+        (Some(installed), Some(running)) => installed > running,
+        _ => false,
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_newer_installed_version_is_one_with_higher_numbers() {
+        assert!(newer_version("2.1.281", "2.1.280"));
+        assert!(newer_version("2.10.0", "2.9.9"));
+        assert!(newer_version("2.1.281 (Claude Code)", "2.1.280"));
+        assert!(!newer_version("2.1.280", "2.1.280"));
+        assert!(!newer_version("2.1.279", "2.1.280"));
+        assert!(!newer_version("", "2.1.280"));
+        assert!(!newer_version("2.1.281", "unknown"));
+    }
     use crate::procs::testing::FakeProcesses;
     use std::collections::HashSet;
     use std::path::Path;

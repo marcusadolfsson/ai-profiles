@@ -137,6 +137,13 @@ pub struct RemoteSession {
     /// once stopped there's nothing to resume.
     #[serde(default)]
     pub empty: bool,
+    /// The Claude Code version it runs, while it runs.
+    #[serde(default)]
+    pub claude_version: Option<String>,
+    /// A newer Claude Code is installed than the one it runs: Claude shows
+    /// "Update installed · Restart to update", and a restart takes it on.
+    #[serde(default)]
+    pub update_pending: bool,
 }
 
 /// A tmux window running a Claude session.
@@ -388,6 +395,8 @@ mod tests {
             waiting: false,
             remote_control_connecting: false,
             empty: false,
+            claude_version: None,
+            update_pending: false,
         };
         let json = serde_json::to_value(&session).unwrap();
         assert_eq!(json["lastPrompt"], serde_json::Value::Null);

@@ -514,6 +514,13 @@ export type RemoteSession = {
   remoteControlConnecting?: boolean
   /** Nothing has been said in it yet: once stopped, it leaves the list. */
   empty?: boolean
+  /** The Claude Code version it runs, while it runs. */
+  claudeVersion?: string | null
+  /**
+   * A newer Claude Code is installed than the one it runs ("Update installed ·
+   * Restart to update"): a restart takes it on.
+   */
+  updatePending?: boolean
 }
 
 /** The subfolders of a folder on a remote host, for picking where to work. */

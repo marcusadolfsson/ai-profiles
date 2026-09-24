@@ -57,6 +57,8 @@ pub struct ServerState {
     /// how far each has got.
     moves: std::sync::Mutex<std::collections::HashMap<String, MoveProgress>>,
     pub(crate) state_dir: std::path::PathBuf,
+    /// The installed `claude`'s version, with when it was asked.
+    installed_claude: std::sync::Mutex<Option<(std::time::Instant, Option<String>)>>,
 }
 
 impl ServerState {
@@ -74,6 +76,7 @@ impl ServerState {
             logins: Logins::default(),
             moves: Default::default(),
             state_dir: state_dir.to_path_buf(),
+            installed_claude: Default::default(),
             config,
         }
     }
@@ -503,6 +506,27 @@ async fn cancel_login(State(state): State<Shared>, UrlPath(id): UrlPath<String>)
     StatusCode::NO_CONTENT
 }
 
+impl ServerState {
+    /// The installed `claude`'s version, asked at most once a minute: an
+    /// update lands under the same path, and sessions started before it run
+    /// the old one until they're restarted.
+    fn installed_claude_version(&self) -> Option<String> {
+        let mut cached = self
+            .installed_claude
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        if let Some((at, version)) = cached.as_ref() {
+            if at.elapsed() < Duration::from_secs(60) {
+                return version.clone();
+            }
+        }
+        let version = hostinfo::claude_path(&self.config)
+            .and_then(|claude| hostinfo::claude_version(&claude));
+        *cached = Some((std::time::Instant::now(), version.clone()));
+        version
+    }
+}
+
 /// How long after starting a session its Remote Control counts as connecting.
 const RC_CONNECT_WINDOW_MS: u64 = 120_000;
 
@@ -535,6 +559,17 @@ async fn list_sessions(
             .map(|(_, id)| id)
             .collect();
         let live = sessions::running(&account, state.processes.as_ref());
+        // Running an older Claude than the one now installed: it shows
+        // "Update installed · Restart to update".
+        if let Some(installed) = state.installed_claude_version() {
+            for session in &mut listed {
+                session.update_pending = session.running
+                    && session
+                        .claude_version
+                        .as_deref()
+                        .is_some_and(|running| sessions::newer_version(&installed, running));
+            }
+        }
         let now_ms = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map_or(0, |since| since.as_millis() as u64);

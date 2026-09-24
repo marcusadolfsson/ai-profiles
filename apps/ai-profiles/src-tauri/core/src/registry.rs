@@ -38,6 +38,8 @@ pub struct RegistryEntry {
     pub pid_domain: Option<String>,
     /// When the process started, in milliseconds since the epoch.
     pub started_at: Option<u64>,
+    /// The Claude Code version the process runs, e.g. `2.1.280`.
+    pub version: Option<String>,
 }
 
 impl RegistryEntry {
