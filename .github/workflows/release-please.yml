@@ -11,6 +11,9 @@ permissions:
 
 jobs:
   release-please:
+    # Upstream's release train. This fork releases by tag instead (see
+    # release.yml), so it doesn't run here.
+    if: github.repository == 'bartekczyz/ai-profiles'
     runs-on: ubuntu-latest
     # Expose release-please's per-package outputs to downstream jobs.
     # The package path lives at `apps/ai-profiles` (see

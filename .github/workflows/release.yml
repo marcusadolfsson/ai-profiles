@@ -19,7 +19,10 @@ permissions:
   contents: write
 
 jobs:
-  publish:
+  # The app: a universal .dmg, signed and notarized when the Apple secrets
+  # are set, uploaded to a draft release that `publish` makes public once
+  # everything is attached.
+  app:
     runs-on: macos-latest
 
     steps:
@@ -98,23 +101,30 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           # APPLE_* vars are intentionally NOT listed here — they're
           # injected by the previous step via $GITHUB_ENV only when
           # APPLE_CERTIFICATE is configured.
         with:
           projectPath: apps/ai-profiles
           tagName: ${{ inputs.tag || github.ref_name }}
-          releaseName: 'ai-profiles ${{ inputs.tag || github.ref_name }}'
-          releaseBody: 'See [CHANGELOG.md](./apps/ai-profiles/CHANGELOG.md) for details. Auto-update will pick this up on the next 6-hour check.'
+          releaseName: 'ai-profiles-remote ${{ inputs.tag || github.ref_name }}'
+          releaseBody: |
+            ai-profiles with sessions and remote hosts. See the [README](https://github.com/marcusadolfsson/ai-profiles-remote#readme).
+
+            **Mac:** download the `.dmg`, open it, drag `ai-profiles.app` to Applications. This build doesn't update itself; get the next one here.
+
+            **Linux host:** the server for x86_64 or arm64, then its setup:
+            ```sh
+            mkdir -p ~/.local/bin && curl -fsSL https://github.com/marcusadolfsson/ai-profiles-remote/releases/latest/download/ai-profiles-server-$(uname -m)-linux -o ~/.local/bin/ai-profiles-server && chmod +x ~/.local/bin/ai-profiles-server
+            ai-profiles-server setup
+            ```
+            Each server binary has a `.sha256` beside it.
           releaseDraft: true
           prerelease: false
           args: --target universal-apple-darwin
 
   # The server for Linux hosts, statically linked (musl) so it runs on any
-  # distribution, built natively on each architecture and attached to the
-  # same release.
+  # distribution, built natively on each architecture.
   server:
     strategy:
       matrix:
@@ -158,12 +168,10 @@ jobs:
           name: server-${{ matrix.arch }}
           path: ai-profiles-server-*
 
-  # release-please publishes the GitHub Release as a draft so users never see
-  # a release without its files. Attach the servers, then flip it to
-  # published, only once the .dmg and both servers are there: a failure
-  # anywhere leaves the draft for inspection.
-  release:
-    needs: [publish, server]
+  # Attach the servers to the release the app job drafted, then publish it:
+  # never a release without all its files.
+  publish:
+    needs: [app, server]
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
