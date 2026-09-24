@@ -93,6 +93,32 @@ pub fn outdated(profile: &Profile, bundle: &Path, version: &str) -> bool {
     built_by != Some(version)
 }
 
+/// Whether the launcher at `bundle` hands launches back to an ai-profiles other
+/// than `host`, the one running: this app has been renamed or moved since the
+/// launcher was built, and the hand-back, which is how a launcher gets rebuilt
+/// after a vendor update breaks it, would find nothing there. A wrapper records
+/// the binary in its Info.plist; a script launcher that hands back names it in
+/// its script.
+fn hands_back_elsewhere(bundle: &Path, host: &Path) -> bool {
+    if !bundle.exists() || !is_ours(bundle) {
+        return false;
+    }
+    let host = host.to_string_lossy();
+    let recorded = ::plist::Value::from_file(bundle.join("Contents/Info.plist"))
+        .ok()
+        .and_then(::plist::Value::into_dictionary)
+        .and_then(|info| {
+            info.get(profile_shim::HOST_BINARY_KEY)
+                .and_then(::plist::Value::as_string)
+                .map(str::to_owned)
+        });
+    match recorded {
+        Some(recorded) => recorded != host,
+        None => fs::read_to_string(bundle.join("Contents/MacOS/launcher"))
+            .is_ok_and(|script| script.contains("--open-profile") && !script.contains(&*host)),
+    }
+}
+
 /// Build again, once, every desktop launcher another ai-profiles version built.
 /// Called when the app starts; returns each profile rebuilt or skipped, by id,
 /// with how it went.
@@ -104,20 +130,23 @@ pub fn outdated(profile: &Profile, bundle: &Path, version: &str) -> bool {
 /// every profile on the new behaviour at the same point, the first start after
 /// an upgrade, which a release note can name.
 ///
+/// So is one that hands back to an ai-profiles that is no longer where it was.
+///
 /// A wrapper that is running is skipped: replacing the bundle a running app is
 /// using breaks it. It stays outdated, so the next start tries again, and
 /// opening the profile from ai-profiles rebuilds it first (see
 /// [`wrapper::state`]).
 pub fn refresh_outdated(profiles: &[Profile], version: &str) -> Vec<(String, AppResult<()>)> {
+    let host = std::env::current_exe().ok();
     profiles
         .iter()
         .filter(|profile| profile.surfaces.gui)
         .filter(|profile| {
-            outdated(
-                profile,
-                &gui_launcher_path(&profile.name, profile.app.spec()),
-                version,
-            )
+            let bundle = gui_launcher_path(&profile.name, profile.app.spec());
+            outdated(profile, &bundle, version)
+                || host
+                    .as_deref()
+                    .is_some_and(|host| hands_back_elsewhere(&bundle, host))
         })
         .map(|profile| {
             let result = match crate::launch::running_wrapper(profile) {
@@ -425,6 +454,51 @@ mod tests {
             .to_file_xml(bundle.join("Contents/Info.plist"))
             .unwrap();
         bundle
+    }
+
+    #[test]
+    fn a_launcher_that_hands_back_to_another_ai_profiles_is_rebuilt() {
+        let dir = tempfile::tempdir().unwrap();
+        let ours = plist::bundle_identifier(&fixture());
+        let old = "/Applications/ai-profiles.app/Contents/MacOS/ai-profiles";
+        let new =
+            Path::new("/Applications/ai-profiles-remote.app/Contents/MacOS/ai-profiles-remote");
+        let wrapper = launcher_bundle(
+            dir.path(),
+            "Wrapper.app",
+            &[
+                ("CFBundleIdentifier", &ours),
+                (profile_shim::HOST_BINARY_KEY, old),
+            ],
+        );
+        assert!(hands_back_elsewhere(&wrapper, new), "the app was renamed");
+        assert!(!hands_back_elsewhere(&wrapper, Path::new(old)));
+
+        let script = launcher_bundle(
+            dir.path(),
+            "Script.app",
+            &[
+                ("CFBundleIdentifier", &ours),
+                ("CFBundleExecutable", "launcher"),
+            ],
+        );
+        fs::create_dir_all(script.join("Contents/MacOS")).unwrap();
+        fs::write(
+            script.join("Contents/MacOS/launcher"),
+            format!("[ -x '{old}' ] && exec '{old}' --open-profile \"abc\""),
+        )
+        .unwrap();
+        assert!(hands_back_elsewhere(&script, new));
+        assert!(!hands_back_elsewhere(&script, Path::new(old)));
+        fs::write(script.join("Contents/MacOS/launcher"), "open -a Claude").unwrap();
+        assert!(!hands_back_elsewhere(&script, new), "it never hands back");
+
+        let theirs = launcher_bundle(
+            dir.path(),
+            "Theirs.app",
+            &[("CFBundleIdentifier", "com.other")],
+        );
+        assert!(!hands_back_elsewhere(&theirs, new), "not ours to rebuild");
     }
 
     #[test]
