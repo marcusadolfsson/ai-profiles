@@ -200,8 +200,8 @@ What Remote Control Conductor adds:
 
 This is a fork of [bartekczyz/ai-profiles](https://github.com/bartekczyz/ai-profiles) by Bartek Czyż, the
 macOS app for running several Claude and ChatGPT accounts side by side. Everything it does, this does too;
-its [README](https://github.com/bartekczyz/ai-profiles#readme) covers that part. If you find it useful,
-the About dialog links to Bartek's Buy Me a Coffee.
+its [README](https://github.com/bartekczyz/ai-profiles#readme) covers that part. Like ai-profiles, it's MIT-licensed, and
+keeps its copyright notice (see [LICENSE](LICENSE)).
 
 The Mac-side changes are proposed upstream, one pull request each:
 
