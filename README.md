@@ -7,13 +7,15 @@
 <p align="center">
   <b>Manage Claude Code CLI for Remote Control, across several servers and accounts.</b><br>
   One Mac app to sign in, start, stop, restart and move Claude Code sessions on your Linux machines,<br>
-  and to keep several Claude Desktop profiles side by side.
+  and to keep several Claude Desktop profiles side by side. With a built-in MCP server, Claude can do it for you.
 </p>
 
 <p align="center">
   <a href="https://github.com/marcusadolfsson/ai-profiles-remote/releases/latest"><b>Download for macOS</b></a>
   &nbsp;·&nbsp;
   <a href="#get-started-in-three-steps">Get started</a>
+  &nbsp;·&nbsp;
+  <a href="#-let-claude-run-it-over-mcp">MCP server</a>
   &nbsp;·&nbsp;
   <a href="#how-this-differs">How this differs</a>
 </p>
@@ -25,7 +27,8 @@
 Remote Control lets you work with Claude Code from the Claude app on your phone, another Mac or the web.
 But the session still has to run somewhere, and someone has to start it, keep it alive, restart it
 when Claude updates, and decide which account it runs under. **ai-profiles-remote does that job, for every
-server and every account, from your Mac.**
+server and every account, from your Mac.** And because it's also an MCP server, you can just ask Claude:
+*"restart the claudemulti session on xjopa1"*.
 
 ## What you get
 
@@ -170,6 +173,8 @@ What ai-profiles-remote adds:
    restarts, renames and moves the sessions behind them.
 4. **Built for a Linux host:** a small server with pinned TLS that brings sessions back after a reboot,
    and accounts that sign in through your Mac's browser.
+5. **Claude can run it.** The app is an MCP server too, so Claude Desktop and Claude Code can list,
+   start, restart, read, archive and move your sessions, on this Mac and on every host, when you ask.
 
 ## Security
 
