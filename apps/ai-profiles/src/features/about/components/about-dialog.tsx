@@ -77,6 +77,13 @@ export function AboutDialog({ open, onClose, onOpenWhatsNew }: Props) {
             <ExternalLinkRow icon={<Globe className="h-3.5 w-3.5" strokeWidth={1.85} />} url={metadata.homepage} />
           </Field>
         ) : null}
+        <Field label="Based on">
+          <ExternalLinkRow
+            icon={<GitBranch className="h-3.5 w-3.5" strokeWidth={1.85} />}
+            url="https://github.com/bartekczyz/ai-profiles"
+            label="ai-profiles by Bartek Czyż"
+          />
+        </Field>
         <Field label="Support">
           <ExternalLinkRow
             icon={<Coffee className="h-3.5 w-3.5" strokeWidth={1.85} />}
@@ -109,6 +116,8 @@ function Field({ label, children }: FieldProps) {
 type ExternalLinkRowProps = {
   icon: React.ReactNode
   url: string
+  /** Shown instead of the URL. */
+  label?: string
 }
 
 /**
@@ -120,7 +129,7 @@ type ExternalLinkRowProps = {
  * the colour change on the URL text and trailing arrow; no background
  * pill that would visually shift the row.
  */
-function ExternalLinkRow({ icon, url }: ExternalLinkRowProps) {
+function ExternalLinkRow({ icon, url, label }: ExternalLinkRowProps) {
   const toast = useToast()
   async function handleClick() {
     try {
@@ -139,7 +148,7 @@ function ExternalLinkRow({ icon, url }: ExternalLinkRowProps) {
         {icon}
       </span>
       <span className="truncate font-mono text-[12px] transition-colors group-hover:text-ink" data-selectable="true">
-        {prettifyUrl(url)}
+        {label ?? prettifyUrl(url)}
       </span>
       <ExternalLink
         aria-hidden
@@ -152,15 +161,19 @@ function ExternalLinkRow({ icon, url }: ExternalLinkRowProps) {
 
 /**
  * Render the host of a URL as the label, hiding the protocol, path, and
- * query string. So:
+ * query string, except on GitHub, where the repository is what tells two
+ * links apart. So:
  *   https://czyz.it?utm_source=ai-profiles → czyz.it
- *   https://github.com/bartekczyz/ai-profiles → github.com
+ *   https://github.com/bartekczyz/ai-profiles → github.com/bartekczyz/ai-profiles
  * The underlying click handler still opens the full URL — only the
  * display string is trimmed.
  */
 function prettifyUrl(url: string): string {
   try {
-    return new URL(url).hostname
+    const parsed = new URL(url)
+    return parsed.hostname === 'github.com'
+      ? `${parsed.hostname}${parsed.pathname.replace(/\/$/, '')}`
+      : parsed.hostname
   } catch {
     return url.replace(/^https?:\/\//, '').replace(/\/$/, '')
   }

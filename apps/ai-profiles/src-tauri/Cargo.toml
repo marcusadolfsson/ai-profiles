@@ -2,10 +2,9 @@
 name = "ai-profiles"
 version = "1.3.1"
 description = "Run multiple Claude accounts on one Mac, each with its own isolated Desktop launcher and CLI wrapper."
-authors = ["Bartek Czyż <bartek@czyz.it>"]
-repository = "https://github.com/bartekczyz/ai-profiles"
+authors = ["Marcus Adolfsson", "Bartek Czyż <bartek@czyz.it>"]
+repository = "https://github.com/marcusadolfsson/ai-profiles-remote"
 license = "MIT"
-homepage = "https://czyz.it?utm_source=ai-profiles"
 edition = "2021"
 # The workspace below adds a second binary (`profile-shim`), which makes a bare
 # `cargo run` (and `tauri dev`) ambiguous without this.
