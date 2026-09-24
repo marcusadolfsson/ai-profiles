@@ -15,6 +15,12 @@ fn main() {
                 std::process::exit(1);
             }
         }
+        Invocation::Mcp => {
+            if let Err(message) = ai_profiles_lib::mcp::serve() {
+                eprintln!("ai-profiles: {message}");
+                std::process::exit(1);
+            }
+        }
         Invocation::Misuse(message) => {
             eprintln!("ai-profiles: {message}");
             std::process::exit(2);

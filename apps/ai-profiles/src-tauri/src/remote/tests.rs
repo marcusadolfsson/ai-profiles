@@ -30,7 +30,7 @@ impl ProcessTable for NothingRunning {
     }
 }
 
-struct Server {
+pub(crate) struct Server {
     address: String,
     fingerprint: String,
     store: Store,
@@ -40,7 +40,7 @@ struct Server {
 
 impl Server {
     /// A fresh pairing code for this server.
-    fn code(&self, secret: &str) -> String {
+    pub(crate) fn code(&self, secret: &str) -> String {
         self.store.add_pending(secret, None).unwrap();
         encode(&PairingCode {
             v: 1,
@@ -56,7 +56,9 @@ fn write(path: &Path, text: &str) {
     fs::write(path, text).unwrap();
 }
 
-async fn start_server() -> Server {
+/// A real ai-profiles-server on 127.0.0.1, with one account, `work`, and
+/// one session in it, "Refactor" in `/code`.
+pub(crate) async fn start_server() -> Server {
     let home = tempfile::tempdir().unwrap();
     let root = home.path().canonicalize().unwrap();
     let account = root.join(".claude-accounts/work");

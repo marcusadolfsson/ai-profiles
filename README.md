@@ -83,6 +83,20 @@ Pair as many Linux machines as you like: a VM in the cloud, a box under the desk
 your NAS. Each shows up in the sidebar under its name, with its accounts as profiles you can color and put
 on ⌘1…⌘9.
 
+### 🤖 Let Claude run it, over MCP
+The app is also an MCP server, so Claude Desktop and Claude Code can do all of this for you: *"restart
+everything on xjopa1 that's waiting on an update"*, *"what's the brain session stuck on?"*, *"move it to
+marcus2"*. It lists profiles, sessions and usage; starts, stops, restarts and renames sessions; reads and
+answers a session's window; and plans and makes moves, merging memory the way you tell it. Claude starts
+the server itself, so the app doesn't need to be open.
+
+Set it up under **Settings → MCP server**: **Add to my Claude profiles** adds it to every Claude profile on
+this Mac, desktop app and Claude Code both. Or add it by hand:
+
+```sh
+claude mcp add --scope user ai-profiles -- /Applications/ai-profiles-remote.app/Contents/MacOS/ai-profiles mcp
+```
+
 ### 🧑‍🤝‍🧑 Multiple profiles for Claude Desktop
 It's still [ai-profiles](https://github.com/bartekczyz/ai-profiles) underneath. Run several Claude Desktop
 (and ChatGPT) accounts side by side, each with its own launcher tinted in its color, its own CLI wrapper

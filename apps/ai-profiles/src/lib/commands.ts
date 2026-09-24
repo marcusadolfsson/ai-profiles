@@ -16,6 +16,8 @@ import type {
   ImportExistingInput,
   LaunchResult,
   LoginStart,
+  McpCommand,
+  McpInstalled,
   MigrationBackupInfo,
   NewRemoteSession,
   PairingPreview,
@@ -462,4 +464,12 @@ export function remoteWindowKeys(input: {
  */
 export function remoteOpenInTerminal(input: { hostId: string; attachCommand: string }): Promise<string | null> {
   return invoke<string | null>('remote_open_in_terminal', input)
+}
+
+export function mcpServerCommand(): Promise<McpCommand> {
+  return invoke<McpCommand>('mcp_server_command')
+}
+
+export function mcpInstall(): Promise<Array<McpInstalled>> {
+  return invoke<Array<McpInstalled>>('mcp_install')
 }

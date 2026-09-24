@@ -701,3 +701,23 @@ export type WindowScreen = {
 
 /** One thing to type into a window: a tmux key name (`Enter`, `Down`, `C-c`, …) or plain text. */
 export type WindowKey = { key: string } | { text: string }
+
+/** How Claude Desktop and Claude Code start the app's MCP server. */
+export type McpCommand = {
+  path: string
+  /** `claude mcp add …` */
+  claudeCode: string
+  /** The `mcpServers` entry for `claude_desktop_config.json`. */
+  desktopJson: string
+}
+
+export type McpInstallStep = { status: 'added' } | { status: 'alreadyThere' } | { status: 'failed'; reason: string }
+
+/** How adding the MCP server to one Claude profile went. */
+export type McpInstalled = {
+  profile: string
+  /** `null` when the profile has no desktop app. */
+  desktop: McpInstallStep | null
+  /** `null` when the profile has no Claude Code. */
+  cli: McpInstallStep | null
+}

@@ -9,6 +9,7 @@ mod deps;
 mod error;
 mod launch;
 mod launchers;
+pub mod mcp;
 mod migration;
 mod path_setup;
 mod paths;
@@ -159,6 +160,8 @@ pub fn run() {
             commands::remote_restore_session,
             commands::remote_delete_archive,
             commands::remote_open_in_terminal,
+            commands::mcp_server_command,
+            commands::mcp_install,
             commands::remote_window_screen,
             commands::remote_window_keys,
             commands::remote_create_account,

@@ -887,6 +887,19 @@ pub async fn remote_open_in_terminal(
     Ok(hint)
 }
 
+/// How Claude Desktop and Claude Code start this app's MCP server.
+#[tauri::command]
+pub fn mcp_server_command() -> AppResult<crate::mcp::install::McpCommand> {
+    crate::mcp::install::command()
+}
+
+/// Add the MCP server to every Claude profile on this Mac: its desktop app's
+/// config and its Claude Code's.
+#[tauri::command(async)]
+pub fn mcp_install() -> AppResult<Vec<crate::mcp::install::Installed>> {
+    crate::mcp::install::install_everywhere()
+}
+
 /// Pure: the interactive CLI command for a profile entry — the per-profile
 /// wrapper (`claude-<slug>`) for managed profiles, or the stock binary
 /// (`claude` / `codex`) for the default entry.

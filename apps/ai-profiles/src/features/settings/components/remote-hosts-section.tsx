@@ -141,7 +141,7 @@ function GuideStep({ number, title, children }: { number: number; title: string;
 }
 
 /** A command, with a button that copies it. */
-function CopyLine({ text }: { text: string }) {
+export function CopyLine({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
   return (
     <div className="flex items-center gap-2 rounded-md border border-border-soft px-2 py-1">

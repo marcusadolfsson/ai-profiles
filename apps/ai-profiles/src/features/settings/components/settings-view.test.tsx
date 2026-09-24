@@ -102,6 +102,13 @@ function primeInitialLoads({
     if (command === 'remote_list_hosts') {
       return []
     }
+    if (command === 'mcp_server_command') {
+      return {
+        path: '/Applications/ai-profiles.app/Contents/MacOS/ai-profiles',
+        claudeCode: 'claude mcp add',
+        desktopJson: '{}',
+      }
+    }
     throw new Error(`unexpected command in test: ${command}`)
   })
 }

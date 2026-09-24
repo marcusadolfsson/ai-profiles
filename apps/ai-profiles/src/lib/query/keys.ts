@@ -33,6 +33,7 @@ export const queryKeys = {
   // Remote hosts and what they report. Never persisted (the provider only
   // dehydrates usage), and outside `profiles` so a local reorder doesn't
   // refetch a machine across the network.
+  mcpCommand: ['mcp-command'] as const,
   remote: {
     all: ['remote'] as const,
     hosts: ['remote', 'hosts'] as const,

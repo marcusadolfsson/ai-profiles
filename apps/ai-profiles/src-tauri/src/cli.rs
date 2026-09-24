@@ -9,6 +9,9 @@
 //! `ai-profiles --open-profile <id>` opens one profile through the usual route
 //! — which rebuilds a stale wrapper on the way — and exits, without ever
 //! starting Tauri or showing a window.
+//!
+//! `ai-profiles mcp` is the other: an MCP server on stdin and stdout, for
+//! Claude to manage profiles and sessions with (see [`crate::mcp`]).
 
 use crate::launch;
 use crate::profiles;
@@ -17,6 +20,10 @@ use crate::profiles;
 /// with the shim's keys, because the shim is what passes it.
 pub use profile_shim::OPEN_PROFILE_FLAG;
 
+/// The first argument that serves MCP instead of starting the GUI. Only as
+/// the first: LaunchServices never passes it there.
+pub const MCP_COMMAND: &str = "mcp";
+
 /// What the process was asked to do.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Invocation<'a> {
@@ -24,6 +31,8 @@ pub enum Invocation<'a> {
     Gui,
     /// Open this profile's desktop app, then exit.
     OpenProfile(&'a str),
+    /// Serve MCP on stdin and stdout until the client closes it.
+    Mcp,
     /// The arguments named a mode without giving it what it needs.
     Misuse(String),
 }
@@ -35,6 +44,9 @@ pub enum Invocation<'a> {
 /// passes arguments of its own (`-psn_0_…`), and an unknown one must never
 /// stop the app from opening.
 pub fn invocation(args: &[String]) -> Invocation<'_> {
+    if args.get(1).map(String::as_str) == Some(MCP_COMMAND) {
+        return Invocation::Mcp;
+    }
     let Some(offset) = args.iter().skip(1).position(|arg| arg == OPEN_PROFILE_FLAG) else {
         return Invocation::Gui;
     };
@@ -85,6 +97,12 @@ mod tests {
     #[test]
     fn no_arguments_starts_the_gui() {
         assert_eq!(invocation(&args(&[])), Invocation::Gui);
+    }
+
+    #[test]
+    fn mcp_first_serves_mcp_and_anywhere_else_is_ordinary() {
+        assert_eq!(invocation(&args(&["mcp"])), Invocation::Mcp);
+        assert_eq!(invocation(&args(&["-psn_0_1234", "mcp"])), Invocation::Gui);
     }
 
     #[test]

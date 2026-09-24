@@ -918,4 +918,4 @@ fn login_segment(login_id: &str) -> AppResult<&str> {
 }
 
 #[cfg(test)]
-mod tests;
+pub(crate) mod tests;

@@ -7,6 +7,7 @@ import { Button, Kbd } from '@/design'
 
 import { AppearanceSection } from './appearance-section'
 import { DataSection, DataSectionFallback } from './data-section'
+import { McpSection, McpSectionFallback } from './mcp-section'
 import { RemoteHostsSection, RemoteHostsSectionFallback } from './remote-hosts-section'
 import { SettingsFooterRow } from './settings-footer-row'
 import { SystemSection, SystemSectionFallback } from './system-section'
@@ -47,6 +48,9 @@ export function SettingsView({ onClose, onOpenMigration, onOpenAbout }: Props) {
       </Suspense>
       <Suspense fallback={<RemoteHostsSectionFallback />}>
         <RemoteHostsSection />
+      </Suspense>
+      <Suspense fallback={<McpSectionFallback />}>
+        <McpSection />
       </Suspense>
       <Suspense fallback={<DataSectionFallback />}>
         <DataSection onReimport={onOpenMigration} />
