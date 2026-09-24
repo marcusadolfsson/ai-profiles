@@ -57,6 +57,10 @@ enum Command {
 }
 
 fn main() -> ExitCode {
+    // Before any thread starts: environment variables are process-wide.
+    for name in inherited_session_variables(std::env::vars_os().map(|(name, _)| name)) {
+        std::env::remove_var(name);
+    }
     match run(Cli::parse()) {
         Ok(()) => ExitCode::SUCCESS,
         Err(error) => {
@@ -64,6 +68,27 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         }
     }
+}
+
+/// Pure: the variables among `names` that say this process was started from
+/// inside a Claude Code session, or a tmux pane. Started from one (by hand,
+/// or by a Claude that set the server up), the server would hand them to
+/// every `claude` it runs, which then acts as that session's child: a
+/// sign-in never prints its link, and a session it starts is nested in
+/// another. `TMUX` would also send every tmux command to that pane's server
+/// rather than the server's own.
+fn inherited_session_variables(
+    names: impl Iterator<Item = std::ffi::OsString>,
+) -> Vec<std::ffi::OsString> {
+    names
+        .filter(|name| {
+            let name = name.to_string_lossy();
+            matches!(
+                name.as_ref(),
+                "CLAUDECODE" | "CLAUDE_PID" | "CLAUDE_EFFORT" | "TMUX" | "TMUX_PANE"
+            ) || name.starts_with("CLAUDE_CODE_")
+        })
+        .collect()
 }
 
 fn run(cli: Cli) -> io::Result<()> {
@@ -320,4 +345,41 @@ fn doctor(config: &Config, paths: &Paths) -> io::Result<()> {
         return Err(io::Error::other(format!("{problems} problem(s) found")));
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn forgets_the_claude_session_and_tmux_pane_it_was_started_from() {
+        let names = [
+            "CLAUDECODE",
+            "CLAUDE_CODE_SESSION_ID",
+            "CLAUDE_CODE_MESSAGING_SOCKET",
+            "CLAUDE_PID",
+            "TMUX",
+            "TMUX_PANE",
+            "CLAUDE_CONFIG_DIR",
+            "PATH",
+            "HOME",
+            "TMUX_TMPDIR",
+        ];
+        let dropped: Vec<String> =
+            inherited_session_variables(names.iter().map(std::ffi::OsString::from))
+                .into_iter()
+                .map(|name| name.to_string_lossy().into_owned())
+                .collect();
+        assert_eq!(
+            dropped,
+            [
+                "CLAUDECODE",
+                "CLAUDE_CODE_SESSION_ID",
+                "CLAUDE_CODE_MESSAGING_SOCKET",
+                "CLAUDE_PID",
+                "TMUX",
+                "TMUX_PANE"
+            ]
+        );
+    }
 }
