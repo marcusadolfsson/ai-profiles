@@ -76,6 +76,7 @@ import { MoveRemoteSessionDialog } from './move-remote-session-dialog'
 import { NewRemoteSessionDialog } from './new-remote-session-dialog'
 import { RemoteWindow } from './remote-window'
 import { SignInDialog } from './sign-in-dialog'
+import { SwitchAccountDialog } from './switch-account-dialog'
 
 type Props = {
   hostId: string
@@ -119,6 +120,7 @@ function Detail({
   const [result, setResult] = useState<{ launch: RemoteLaunch; account: string } | null>(null)
   const [signingIn, setSigningIn] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
+  const [switching, setSwitching] = useState(false)
   const [editing, setEditing] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const color = host.profiles?.[accountName]?.color ?? null
@@ -151,6 +153,7 @@ function Detail({
                 onEdit={() => setEditing(true)}
                 onSignIn={() => setSigningIn(true)}
                 onSignOut={() => setSigningOut(true)}
+                onSwitch={() => setSwitching(true)}
                 onDelete={() => setDeleting(true)}
               />
             ) : undefined
@@ -161,7 +164,9 @@ function Detail({
       {account && !account.signedIn && !accounts.isError ? (
         <div className="mb-5 flex items-center justify-between gap-3 rounded-[10px] border border-border-soft px-[13px] py-[10px]">
           <p className="text-body text-ink-soft">
-            Signed out. Sessions started here will ask to sign in before they do anything.
+            {(account.pendingResume ?? 0) > 0
+              ? `Switching account: ${account.pendingResume} ${account.pendingResume === 1 ? 'session resumes' : 'sessions resume'} here as soon as it's signed in again.`
+              : 'Signed out. Sessions started here will ask to sign in before they do anything.'}
           </p>
           <Button
             variant="secondary"
@@ -204,6 +209,9 @@ function Detail({
       {account ? (
         <SignOutDialog open={signingOut} host={host} account={account} onClose={() => setSigningOut(false)} />
       ) : null}
+      {account ? (
+        <SwitchAccountDialog open={switching} host={host} account={account} onClose={() => setSwitching(false)} />
+      ) : null}
       {editing ? (
         <EditRemoteProfileDialog
           open
@@ -240,20 +248,22 @@ function Detail({
 const menuTriggerClasses = 'w-7 px-0 text-muted hover:not-disabled:text-ink'
 
 /**
- * Rare things done to the profile: its color, signing it in or out, and
- * deleting it.
+ * Rare things done to the profile: its color, switching its account, signing
+ * it in or out, and deleting it.
  */
 function ProfileMenu({
   account,
   onEdit,
   onSignIn,
   onSignOut,
+  onSwitch,
   onDelete,
 }: {
   account: RemoteAccount
   onEdit: () => void
   onSignIn: () => void
   onSignOut: () => void
+  onSwitch: () => void
   onDelete: () => void
 }) {
   return (
@@ -267,6 +277,11 @@ function ProfileMenu({
         <DropdownMenuItem className="px-2 py-1.5 text-[12px]" onSelect={onEdit}>
           Edit profile…
         </DropdownMenuItem>
+        {account.signedIn ? (
+          <DropdownMenuItem className="px-2 py-1.5 text-[12px]" onSelect={onSwitch}>
+            Switch account…
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuItem className="px-2 py-1.5 text-[12px]" onSelect={account.signedIn ? onSignOut : onSignIn}>
           {account.signedIn ? 'Sign out…' : 'Sign in…'}
         </DropdownMenuItem>

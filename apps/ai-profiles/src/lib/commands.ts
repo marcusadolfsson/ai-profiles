@@ -414,7 +414,13 @@ export function remoteSetProfileColor(input: { hostId: string; account: string; 
 }
 
 /** Sign a remote profile out. Resolves to how many running sessions were stopped. */
-export function remoteLogout(input: { hostId: string; account: string; stopRunning: boolean }): Promise<number> {
+export function remoteLogout(input: {
+  hostId: string
+  account: string
+  stopRunning: boolean
+  /** Resume the stopped sessions at the next sign-in: switching account. */
+  resumeAfterSignIn?: boolean
+}): Promise<number> {
   return invoke<number>('remote_logout', input)
 }
 

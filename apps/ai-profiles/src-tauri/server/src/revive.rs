@@ -7,8 +7,10 @@
 //! finds its tmux session gone, it resumes each of them that isn't running,
 //! in its folder, with Remote Control, as Resume would.
 
+use std::collections::BTreeMap;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::Mutex;
 use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
@@ -121,9 +123,139 @@ pub fn revive(state: &ServerState) -> Vec<(String, String, Result<(), String>)> 
     outcomes
 }
 
+/// Sessions a sign-out stopped, by account, to resume at the next sign-in.
+const PENDING_FILE: &str = "pending-resume.json";
+
+/// Serialises reading and rewriting [`PENDING_FILE`] across accounts.
+static PENDING_LOCK: Mutex<()> = Mutex::new(());
+
+fn pending_path(state: &ServerState) -> PathBuf {
+    state.state_dir.join(PENDING_FILE)
+}
+
+fn read_pending(state: &ServerState) -> BTreeMap<String, Vec<String>> {
+    fs::read_to_string(pending_path(state))
+        .ok()
+        .and_then(|text| serde_json::from_str(&text).ok())
+        .unwrap_or_default()
+}
+
+fn write_pending(state: &ServerState, pending: &BTreeMap<String, Vec<String>>) {
+    let Ok(text) = serde_json::to_string_pretty(pending) else {
+        return;
+    };
+    let tmp = pending_path(state).with_extension("json.tmp");
+    if fs::write(&tmp, text).is_ok() {
+        let _ = fs::rename(&tmp, pending_path(state));
+    }
+}
+
+fn update_pending(state: &ServerState, change: impl FnOnce(&mut BTreeMap<String, Vec<String>>)) {
+    let _held = PENDING_LOCK
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let mut pending = read_pending(state);
+    change(&mut pending);
+    pending.retain(|_, ids| !ids.is_empty());
+    write_pending(state, &pending);
+}
+
+/// Remember `ids` of `account` to resume at its next sign-in, next to any it
+/// already waits on.
+pub fn hold_for_sign_in(state: &ServerState, account: &str, ids: &[String]) {
+    update_pending(state, |pending| {
+        let held = pending.entry(account.to_owned()).or_default();
+        for id in ids {
+            if !held.contains(id) {
+                held.push(id.clone());
+            }
+        }
+    });
+}
+
+/// The sessions of `account` waiting on its next sign-in.
+pub fn pending(state: &ServerState, account: &str) -> Vec<String> {
+    let _held = PENDING_LOCK
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    read_pending(state).remove(account).unwrap_or_default()
+}
+
+/// After a sign-in: resume each session of `account` that waits on it, as
+/// Resume would, and let it go whether or not it came back, so a session
+/// that can't resume doesn't wait forever. Returns `(session, outcome)`.
+pub fn resume_pending(state: &ServerState, name: &str) -> Vec<(String, Result<(), String>)> {
+    let mut outcomes = Vec::new();
+    for id in pending(state, name) {
+        let outcome = match accounts::find(&state.config, name) {
+            None => Err("the profile is gone".to_owned()),
+            Some(account) => {
+                if sessions::running(&account, state.processes.as_ref()).contains_key(&id) {
+                    Ok(())
+                } else {
+                    let lock = state.account_lock(&account.name);
+                    let _held = lock
+                        .lock()
+                        .unwrap_or_else(std::sync::PoisonError::into_inner);
+                    resume_held(state, &account, &id, true)
+                        .map(|_| ())
+                        .map_err(|err| err.message)
+                }
+            }
+        };
+        update_pending(state, |pending| {
+            if let Some(held) = pending.get_mut(name) {
+                held.retain(|held| held != &id);
+            }
+        });
+        outcomes.push((id, outcome));
+    }
+    outcomes
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    struct NothingRunning;
+
+    impl crate::procs::ProcessTable for NothingRunning {
+        fn is_live_claude(&self, _entry: &ai_profiles_core::registry::RegistryEntry) -> bool {
+            false
+        }
+
+        fn signal(&self, _entry: &ai_profiles_core::registry::RegistryEntry, _force: bool) -> bool {
+            false
+        }
+    }
+
+    fn state_in(home: &std::path::Path) -> ServerState {
+        let config = crate::config::Config::from_toml("", home).unwrap();
+        let state_dir = home.join("state");
+        fs::create_dir_all(&state_dir).unwrap();
+        ServerState::new(config, &state_dir, std::sync::Arc::new(NothingRunning))
+    }
+
+    #[test]
+    fn sessions_wait_for_the_next_sign_in_once_each_and_per_profile() {
+        let home = tempfile::tempdir().unwrap();
+        let state = state_in(home.path());
+        assert!(pending(&state, "work").is_empty());
+
+        hold_for_sign_in(&state, "work", &["a".into(), "b".into()]);
+        hold_for_sign_in(&state, "work", &["b".into(), "c".into()]);
+        hold_for_sign_in(&state, "home", &["z".into()]);
+        assert_eq!(pending(&state, "work"), vec!["a", "b", "c"]);
+        assert_eq!(pending(&state, "home"), vec!["z"]);
+
+        // A profile that's gone can't resume them: they're let go, not kept
+        // waiting for ever.
+        let outcomes = resume_pending(&state, "work");
+        assert_eq!(outcomes.len(), 3);
+        assert!(outcomes.iter().all(|(_, outcome)| outcome.is_err()));
+        assert!(pending(&state, "work").is_empty());
+        assert_eq!(pending(&state, "home"), vec!["z"]);
+    }
 
     #[test]
     fn brings_sessions_back_after_a_reboot_or_when_tmux_lost_them() {

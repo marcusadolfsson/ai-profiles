@@ -97,6 +97,10 @@ pub struct RemoteAccount {
     /// Sessions with something in them.
     pub sessions: u32,
     pub running_sessions: u32,
+    /// Sessions a sign-out stopped, to resume at the next sign-in (see
+    /// [`LogoutRequest::resume_after_sign_in`]).
+    #[serde(default)]
+    pub pending_resume: u32,
 }
 
 /// One session of an account, as the client's list shows it.
@@ -219,6 +223,11 @@ pub struct LogoutRequest {
     /// `sessions_running` while any run otherwise.
     #[serde(default)]
     pub stop_running: bool,
+    /// Remember the running sessions it stops, and resume them once the
+    /// account is signed in again, whichever account that is: how a profile
+    /// switches account without its sessions moving.
+    #[serde(default)]
+    pub resume_after_sign_in: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -226,6 +235,9 @@ pub struct LogoutRequest {
 pub struct LogoutResult {
     /// Sessions stopped on the way.
     pub stopped: u32,
+    /// Their ids.
+    #[serde(default)]
+    pub stopped_ids: Vec<String>,
 }
 
 /// `POST /v1/accounts/{name}/sessions/{id}/stop`.

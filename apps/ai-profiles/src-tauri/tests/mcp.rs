@@ -131,6 +131,8 @@ fn it_introduces_itself_and_lists_its_tools() {
         "open_profile",
         "plan_move",
         "move_session",
+        "switch_account",
+        "finish_sign_in",
         "archive_session",
         "restore_session",
         "delete_archive",

@@ -632,24 +632,28 @@ pub fn set_profile_color(
 }
 
 /// Sign a remote account out, stopping its running sessions first when
-/// `stop_running`. Returns how many were stopped.
+/// `stop_running`. With `resume_after_sign_in`, the host resumes them once
+/// the profile is signed in again, as whichever account: switching account.
 pub async fn logout(
     list: &HostList,
     secrets: &dyn SecretStore,
     host_id: &str,
     account: &str,
     stop_running: bool,
-) -> AppResult<u32> {
+    resume_after_sign_in: bool,
+) -> AppResult<LogoutResult> {
     let path = format!("/v1/accounts/{}/logout", account_segment(account)?);
-    let result: LogoutResult = post(
+    post(
         list,
         secrets,
         host_id,
         &path,
-        &LogoutRequest { stop_running },
+        &LogoutRequest {
+            stop_running,
+            resume_after_sign_in,
+        },
     )
-    .await?;
-    Ok(result.stopped)
+    .await
 }
 
 /// Where the sign-in page may be. The server checks too; this side checks

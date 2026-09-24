@@ -1,4 +1,4 @@
-import type { AppError, LoginStart, RemoteHost } from '@/lib/types'
+import type { AppError, LoginStart, RemoteAccount, RemoteHost } from '@/lib/types'
 
 import { useEffect, useRef, useState } from 'react'
 
@@ -17,6 +17,10 @@ type Props = {
   account: string
   /** What Cancel says: "Skip for now" straight after making the profile. */
   cancelLabel?: string
+  /** Instead of the usual title, "Sign in <profile>". */
+  title?: string
+  /** Signed in: the caller says so instead of the usual toast. */
+  onSignedIn?: (signed: RemoteAccount) => void
   onClose: () => void
 }
 
@@ -32,7 +36,7 @@ function errorCode(error: unknown): string | undefined {
  * login`, its sign-in page opens here in the browser, and the code the page
  * shows is pasted back and typed in on the host.
  */
-export function SignInDialog({ open, host, account, cancelLabel = 'Cancel', onClose }: Props) {
+export function SignInDialog({ open, host, account, cancelLabel = 'Cancel', title, onSignedIn, onClose }: Props) {
   const { start, submit, cancel } = useRemoteSignIn(host.id, account)
   const toast = useToast()
   const [login, setLogin] = useState<LoginStart | null>(null)
@@ -74,9 +78,13 @@ export function SignInDialog({ open, host, account, cancelLabel = 'Cancel', onCl
     }
     try {
       const signed = await submit.mutateAsync({ loginId: login.loginId, code: code.trim() })
+      setLogin(null)
+      if (onSignedIn) {
+        onSignedIn(signed)
+        return
+      }
       const who = signed.account?.email
       toast.success(`Signed in ${account}`, who ? `As ${who}, on ${host.label}.` : `On ${host.label}.`)
-      setLogin(null)
       onClose()
     } catch {
       // Shown below.
@@ -94,7 +102,7 @@ export function SignInDialog({ open, host, account, cancelLabel = 'Cancel', onCl
   return (
     <Dialog
       open={open}
-      title={`Sign in ${account}`}
+      title={title ?? `Sign in ${account}`}
       description={`On ${host.label}. Sign in in the browser, then paste the code the page shows.`}
       onClose={handleClose}
       onSubmit={handleSubmit}

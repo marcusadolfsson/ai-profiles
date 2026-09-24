@@ -480,6 +480,8 @@ export type RemoteAccount = {
   signedInUntil: string | null
   sessions: number
   runningSessions: number
+  /** Sessions a sign-out stopped, resuming at the next sign-in: a switch of account. */
+  pendingResume?: number
 }
 
 export type TmuxWindow = {

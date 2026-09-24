@@ -747,15 +747,22 @@ pub fn remote_set_profile_color(
 
 /// Sign a remote profile out. Returns how many running sessions were stopped.
 #[tauri::command]
-pub async fn remote_logout(host_id: String, account: String, stop_running: bool) -> AppResult<u32> {
+pub async fn remote_logout(
+    host_id: String,
+    account: String,
+    stop_running: bool,
+    resume_after_sign_in: Option<bool>,
+) -> AppResult<u32> {
     remote::logout(
         &HostList::default_list()?,
         secrets::store(),
         &host_id,
         &account,
         stop_running,
+        resume_after_sign_in.unwrap_or(false),
     )
     .await
+    .map(|result| result.stopped)
 }
 
 /// Start signing a remote account in, opening its sign-in page in the browser.

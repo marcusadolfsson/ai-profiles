@@ -396,6 +396,21 @@ export function useRenameRemoteSession(hostId: string, account: string) {
   })
 }
 
+/**
+ * The first half of switching a profile's account: sign it out, and have the
+ * host resume its running sessions at the next sign-in, as whichever account.
+ */
+export function useSwitchAccountSignOut(hostId: string, account: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => remoteLogout({ hostId, account, stopRunning: true, resumeAfterSignIn: true }),
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.remote.accounts(hostId) })
+      await queryClient.invalidateQueries({ queryKey: queryKeys.remote.sessions(hostId, account) })
+    },
+  })
+}
+
 /** Signing out stops the profile's sessions, and changes its status. */
 export function useRemoteLogout(hostId: string, account: string) {
   const queryClient = useQueryClient()

@@ -295,6 +295,7 @@ fn describe(state: &ServerState, account: accounts::AccountDir) -> RemoteAccount
         }),
         sessions: sessions.len() as u32,
         running_sessions: sessions.iter().filter(|s| s.running).count() as u32,
+        pending_resume: crate::revive::pending(state, &account.name).len() as u32,
         config_dir: account.dir.display().to_string(),
         is_default: account.is_default,
         name: account.name,
@@ -496,6 +497,21 @@ async fn submit_login(
             eprintln!("could not mark {account_name} set up: {err}");
         }
         eprintln!("signed in account {account_name}");
+        // A switch of account: the sessions its sign-out stopped come back
+        // now, one at a time, under the account it signed in to. Off this
+        // request, which the Mac waits on.
+        if !crate::revive::pending(&state, &account_name).is_empty() {
+            let state = Arc::clone(&state);
+            let name = account_name.clone();
+            std::thread::spawn(move || {
+                for (id, outcome) in crate::revive::resume_pending(&state, &name) {
+                    match outcome {
+                        Ok(()) => eprintln!("resumed {name}/{id} after sign-in"),
+                        Err(err) => eprintln!("could not resume {name}/{id}: {err}"),
+                    }
+                }
+            });
+        }
         Ok(Json(describe(&state, account)))
     })
     .await
@@ -1355,10 +1371,15 @@ async fn logout(
                 ),
             ));
         }
-        let mut stopped = 0;
+        // Written down before anything stops, so a sign-out that fails
+        // halfway still brings back what it stopped.
+        if request.resume_after_sign_in {
+            crate::revive::hold_for_sign_in(&state, &account.name, &running);
+        }
+        let mut stopped_ids = Vec::new();
         for id in &running {
             if stop_held(&state, &account, id)? {
-                stopped += 1;
+                stopped_ids.push(id.clone());
             }
         }
         crate::revive::remember(&state);
@@ -1386,7 +1407,10 @@ async fn logout(
                 ),
             ));
         }
-        Ok(Json(LogoutResult { stopped }))
+        Ok(Json(LogoutResult {
+            stopped: stopped_ids.len() as u32,
+            stopped_ids,
+        }))
     })
     .await
 }

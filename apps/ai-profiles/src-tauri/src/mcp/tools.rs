@@ -37,8 +37,10 @@ Remote Control Conductor manages Claude accounts on this Mac (profiles) and Clau
 Linux hosts, where sessions run in tmux with Remote Control on. Start with list_profiles. A \
 profile on this Mac is named by its name (\"Marcus1\"); an account on a host is written \
 host/account (\"xjopa1/marcus1\"). A session is named by its id, an id prefix of 8+ characters, \
-or its exact title. Moves stay within this Mac or within one host. Before move_session, call \
-plan_move: every memory note both sides changed needs a decision.";
+or its exact title. When a profile's account runs out of usage, switch_account (then \
+finish_sign_in) moves the whole profile to another account: nothing moves, its sessions resume. \
+Moves stay within this Mac or within one host. Before move_session, call plan_move: every memory \
+note both sides changed needs a decision.";
 
 #[derive(Clone)]
 pub struct AiProfiles {
@@ -131,6 +133,16 @@ pub struct SendKeysParams {
     pub session: String,
     /// What to send, in order.
     pub keys: Vec<KeyParam>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct FinishSignInParams {
+    /// The profile on a host that switch_account signed out ("xjopa1/marcus1").
+    pub profile: String,
+    /// The login_id switch_account returned.
+    pub login_id: String,
+    /// The code the sign-in page showed after signing in.
+    pub code: String,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
@@ -398,6 +410,28 @@ impl AiProfiles {
         Parameters(params): Parameters<ProfileParams>,
     ) -> Result<CallToolResult, McpError> {
         reply(open_profile(&params.profile).await)
+    }
+
+    #[tool(
+        description = "Switch a profile on a host to another Claude account, the way to go on when its account runs out of usage: its running sessions stop, it signs out, and a sign-in page opens in this Mac's browser. Sign in there as the other account, then pass the code the page shows to finish_sign_in; the same sessions then resume under the new account, with Remote Control on. Nothing moves, and other profiles aren't touched.",
+        annotations(read_only_hint = false, destructive_hint = true)
+    )]
+    async fn switch_account(
+        &self,
+        Parameters(params): Parameters<ProfileParams>,
+    ) -> Result<CallToolResult, McpError> {
+        reply(switch_account(&params.profile).await)
+    }
+
+    #[tool(
+        description = "Finish a switch_account (or any sign-in on a host): hand over the code the sign-in page showed. Says which account the profile is now signed in to, and how many sessions are resuming.",
+        annotations(read_only_hint = false, destructive_hint = false)
+    )]
+    async fn finish_sign_in(
+        &self,
+        Parameters(params): Parameters<FinishSignInParams>,
+    ) -> Result<CallToolResult, McpError> {
+        reply(finish_sign_in(params).await)
     }
 
     #[tool(
@@ -1148,6 +1182,53 @@ fn local_request(from: &str, session_id: &str, to: &str) -> sessions::TransferRe
         quit_apps: false,
         memory: HashMap::new(),
     }
+}
+
+async fn switch_account(reference: &str) -> Outcome {
+    let (host_id, host_label, account) = remote_target(reference).await?;
+    let list = host_list()?;
+    let before = remote::accounts(&list, secrets::store(), &host_id)
+        .await
+        .map_err(why)?
+        .into_iter()
+        .find(|found| found.name == account)
+        .ok_or_else(|| format!("{host_label} has no profile called {account}."))?;
+    let signed_out = remote::logout(&list, secrets::store(), &host_id, &account, true, true)
+        .await
+        .map_err(why)?;
+    let started = remote::start_login(&list, secrets::store(), &host_id, &account, true)
+        .await
+        .map_err(why)?;
+    Ok(json!({
+        "profile": format!("{host_label}/{account}"),
+        "wasSignedInAs": before.account.as_ref().and_then(|signed| signed.email.clone()),
+        "stoppedSessions": signed_out.stopped_ids,
+        "signIn": {
+            "loginId": started.login_id,
+            "url": started.url,
+            "expiresAt": started.expires_at,
+        },
+        "next": "The sign-in page is open in this Mac's browser. Sign in there as the account to switch to (if claude.ai shows the old one, switch it first), then call finish_sign_in with the code the page shows.",
+    }))
+}
+
+async fn finish_sign_in(params: FinishSignInParams) -> Outcome {
+    let (host_id, host_label, account) = remote_target(&params.profile).await?;
+    let signed = remote::submit_login(
+        &host_list()?,
+        secrets::store(),
+        &host_id,
+        &params.login_id,
+        &params.code,
+    )
+    .await
+    .map_err(why)?;
+    Ok(json!({
+        "profile": format!("{host_label}/{account}"),
+        "signedInAs": signed.account.as_ref().and_then(|signed| signed.email.clone()),
+        "plan": signed.account.as_ref().and_then(|signed| signed.plan.clone()),
+        "resumingSessions": signed.pending_resume,
+    }))
 }
 
 async fn plan_move(params: PlanMoveParams) -> Outcome {
