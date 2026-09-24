@@ -12,7 +12,13 @@ use ai_profiles_core::api::TmuxWindow;
 
 /// `-F` format for a window just made: what to target it by, and the pid of
 /// its pane (the `claude` process itself, since the command is exec'd).
-const NEW_WINDOW_FORMAT: &str = "#{session_name}\t#{window_id}\t#{pane_id}\t#{pane_pid}";
+/// Between the fields of a tmux format. Not a tab: tmux 3.7 prints tabs (and
+/// other control characters) in a format's output as `_`. A colon can't be in
+/// a session name, and no other field asked for (ids, pids, sizes, profile
+/// names) can hold one.
+const SEP: char = ':';
+
+const NEW_WINDOW_FORMAT: &str = "#{session_name}:#{window_id}:#{pane_id}:#{pane_pid}";
 
 #[derive(Debug, Clone)]
 pub struct Tmux {
@@ -123,13 +129,13 @@ impl Tmux {
 
     /// Windows carrying `option`, with its value: `(window, value)`.
     pub fn tagged(&self, option: &str) -> Vec<(TmuxWindow, String)> {
-        let format = format!("#{{session_name}}\t#{{window_id}}\t#{{pane_id}}\t#{{{option}}}");
+        let format = format!("#{{session_name}}:#{{window_id}}:#{{pane_id}}:#{{{option}}}");
         let Ok(text) = self.run_ok(&["list-panes", "-a", "-F", &format]) else {
             return Vec::new();
         };
         text.lines()
             .filter_map(|line| {
-                let mut fields = line.split('\t');
+                let mut fields = line.split(SEP);
                 let window = TmuxWindow {
                     session: fields.next()?.to_owned(),
                     window_id: fields.next()?.to_owned(),
@@ -164,10 +170,10 @@ impl Tmux {
                 "-p",
                 "-t",
                 pane_id,
-                "#{pane_width}\t#{pane_height}",
+                "#{pane_width}:#{pane_height}",
             ])
             .ok()?;
-        let (width, height) = size.trim().split_once('\t')?;
+        let (width, height) = size.trim().split_once(SEP)?;
         Some((text, width.parse().ok()?, height.parse().ok()?))
     }
 
@@ -180,10 +186,10 @@ impl Tmux {
                 "-t",
                 window_id,
                 "-F",
-                "#{session_name}\t#{window_id}\t#{pane_id}\t#{pane_pid}\t#{@aip_account}",
+                "#{session_name}:#{window_id}:#{pane_id}:#{pane_pid}:#{@aip_account}",
             ])
             .ok()?;
-        let mut fields = text.lines().next()?.split('\t');
+        let mut fields = text.lines().next()?.split(SEP);
         let window = TmuxWindow {
             session: fields.next()?.to_owned(),
             window_id: fields.next()?.to_owned(),
@@ -226,7 +232,7 @@ impl Tmux {
 }
 
 fn parse_launched(output: &str) -> Option<Launched> {
-    let mut fields = output.trim().split('\t');
+    let mut fields = output.trim().split(SEP);
     let session = fields.next()?.to_owned();
     let window_id = fields.next()?.to_owned();
     let pane_id = fields.next()?.to_owned();
@@ -290,12 +296,12 @@ mod tests {
 
     #[test]
     fn reads_what_new_window_prints() {
-        let launched = parse_launched("ai\t@7\t%12\t4242\n").unwrap();
+        let launched = parse_launched("ai:@7:%12:4242\n").unwrap();
         assert_eq!(launched.window.window_id, "@7");
         assert_eq!(launched.window.pane_id, "%12");
         assert_eq!(launched.pane_pid, 4242);
-        assert_eq!(parse_launched("ai\t@7\n"), None);
-        assert_eq!(parse_launched("ai\t@7\t%1\tnot-a-pid"), None);
+        assert_eq!(parse_launched("ai:@7\n"), None);
+        assert_eq!(parse_launched("ai:@7:%1:not-a-pid"), None);
     }
 
     #[test]
