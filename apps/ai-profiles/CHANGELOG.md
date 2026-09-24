@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.5.1](https://github.com/marcusadolfsson/remote-control-conductor/releases/tag/conductor-v0.5.1) (2026-09-24)
+
+### Added
+
+* **remote:** Switch account on a profile: its running sessions stop, it signs in as another account in your browser, and the same sessions resume under it, with Remote Control on. The way to carry on when an account runs out of usage
+* **remote:** a Remote Control list in the sidebar, with every session connected on your servers, by account
+* **profiles:** a desktop profile lists the Remote Control sessions on its account, and opens them in itself
+* **mcp:** switch_account and finish_sign_in
+
+### Changed
+
+* **remote:** Rename and Move to another profile are in each session's ⋯ menu
+* ChatGPT is hidden for now
+
+### Fixed
+
+* **server:** read tmux's answers on tmux 3.7, which prints tabs as `_`
+* **profiles:** say that Claude's own Dock icon costs Cowork its folders, and start it off
+
 ## [0.5.0](https://github.com/marcusadolfsson/remote-control-conductor/releases/tag/v0.5.0) (2026-09-24)
 
 The first release as Remote Control Conductor, formerly ai-profiles-remote. The releases below it are ai-profiles', which this app is based on.
