@@ -33,7 +33,7 @@ type Outcome = Result<Value, String>;
 const HOST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(8);
 
 const INSTRUCTIONS: &str = "\
-ai-profiles manages Claude accounts on this Mac (profiles) and Claude Code accounts on paired \
+Remote Control Conductor manages Claude accounts on this Mac (profiles) and Claude Code accounts on paired \
 Linux hosts, where sessions run in tmux with Remote Control on. Start with list_profiles. A \
 profile on this Mac is named by its name (\"Marcus1\"); an account on a host is written \
 host/account (\"xjopa1/marcus1\"). A session is named by its id, an id prefix of 8+ characters, \
@@ -461,7 +461,7 @@ impl ServerHandler for AiProfiles {
     fn get_info(&self) -> ServerConfig {
         ServerConfig::new(ServerCapabilities::builder().enable_tools().build())
             .with_server_info(Implementation::new(
-                "ai-profiles",
+                "remote-control-conductor",
                 env!("CARGO_PKG_VERSION"),
             ))
             .with_instructions(INSTRUCTIONS)
@@ -1546,7 +1546,7 @@ mod tests {
         assert!(error.contains("20260922-080000-archived"), "{error}");
     }
 
-    /// The tools against a real ai-profiles-server, paired into the app's
+    /// The tools against a real remote-control-conductor-server, paired into the app's
     /// own host list as the app would have it.
     #[tokio::test(flavor = "multi_thread")]
     #[expect(

@@ -15,7 +15,7 @@ import { copyToClipboard } from '@/lib/commands'
 const headingClasses = 'font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted-strong'
 
 /**
- * Linux machines running ai-profiles-server. Pairing one adds a section for
+ * Linux machines running remote-control-conductor-server. Pairing one adds a section for
  * it to the sidebar with its Claude accounts.
  */
 export function RemoteHostsSection() {
@@ -41,8 +41,8 @@ export function RemoteHostsSection() {
       <div className="rounded-xl border border-border bg-white py-1 dark:bg-cream-2">
         {hosts.length === 0 ? (
           <p className="px-4 py-3 text-[13px] text-muted">
-            None yet. Install ai-profiles-server on a Linux machine where Claude Code runs, then pair it here to see its
-            accounts and sessions.
+            None yet. Install remote-control-conductor-server on a Linux machine where Claude Code runs, then pair it
+            here to see its accounts and sessions.
           </p>
         ) : (
           hosts.map((host) => (
@@ -91,11 +91,11 @@ function SetupGuide({ initiallyOpen, onPair }: { initiallyOpen: boolean; onPair:
             <CopyLine text="sudo apt install tmux" />
             <CopyLine text="curl -fsSL https://claude.ai/install.sh | bash" />
           </GuideStep>
-          <GuideStep number={2} title="Install ai-profiles-server">
+          <GuideStep number={2} title="Install remote-control-conductor-server">
             <p className="text-muted">A prebuilt binary, for x86_64 or arm64 Linux:</p>
-            <CopyLine text="mkdir -p ~/.local/bin && curl -fsSL https://github.com/marcusadolfsson/ai-profiles-remote/releases/latest/download/ai-profiles-server-$(uname -m)-linux -o ~/.local/bin/ai-profiles-server && chmod +x ~/.local/bin/ai-profiles-server" />
+            <CopyLine text="mkdir -p ~/.local/bin && curl -fsSL https://github.com/marcusadolfsson/remote-control-conductor/releases/latest/download/remote-control-conductor-server-$(uname -m)-linux -o ~/.local/bin/remote-control-conductor-server && chmod +x ~/.local/bin/remote-control-conductor-server" />
             <p className="text-muted">Or built from source, which takes a Rust toolchain (rustup.rs):</p>
-            <CopyLine text="cargo install --locked --git https://github.com/marcusadolfsson/ai-profiles-remote ai-profiles-server" />
+            <CopyLine text="cargo install --locked --git https://github.com/marcusadolfsson/remote-control-conductor remote-control-conductor-server" />
           </GuideStep>
           <GuideStep number={3} title="Run its setup">
             <p className="text-muted">
@@ -103,13 +103,13 @@ function SetupGuide({ initiallyOpen, onPair }: { initiallyOpen: boolean; onPair:
               WireGuard peers can by default; a LAN only if you say so), installs it as a service that survives a
               reboot, and prints a pairing code.
             </p>
-            <CopyLine text="ai-profiles-server setup" />
+            <CopyLine text="remote-control-conductor-server setup" />
           </GuideStep>
           <GuideStep number={4} title="Pair it here">
             <p className="text-muted">
               Paste the code, and check the certificate fingerprint matches the one setup printed. A new code any time:{' '}
-              <code className="font-mono text-[11.5px]">ai-profiles-server pair</code>. Something wrong:{' '}
-              <code className="font-mono text-[11.5px]">ai-profiles-server doctor</code>.
+              <code className="font-mono text-[11.5px]">remote-control-conductor-server pair</code>. Something wrong:{' '}
+              <code className="font-mono text-[11.5px]">remote-control-conductor-server doctor</code>.
             </p>
             <div>
               <Button
@@ -263,7 +263,7 @@ function RemoveHostDialog({ host, onClose }: { host: RemoteHost; onClose: () => 
     <Dialog
       open
       title={`Remove ${host.label}?`}
-      description="ai-profiles forgets this host and deletes its token from the Keychain. The server is told to forget this Mac too, if it can be reached. Nothing on the host changes."
+      description="Remote Control Conductor forgets this host and deletes its token from the Keychain. The server is told to forget this Mac too, if it can be reached. Nothing on the host changes."
       onClose={onClose}
       onSubmit={handleRemove}
       foot={

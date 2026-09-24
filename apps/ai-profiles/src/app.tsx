@@ -190,7 +190,7 @@ function AppContent() {
     return () => window.removeEventListener('contextmenu', handleContextMenu)
   }, [])
 
-  // Bridge the macOS App menu's "About ai-profiles-remote" item to our custom
+  // Bridge the macOS App menu's "About Remote Control Conductor" item to our custom
   // dialog. The menu item (set up in src-tauri/src/lib.rs) emits the
   // `open-about` event; this listener catches it and opens the dialog.
   // Replaces the tiny native About panel macOS would otherwise show.

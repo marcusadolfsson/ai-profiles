@@ -350,7 +350,7 @@ pub fn remote_preview_pairing(code: String) -> AppResult<PairingPreview> {
     remote::preview(&code)
 }
 
-/// Pair with the host a code from `ai-profiles-server pair` names.
+/// Pair with the host a code from `remote-control-conductor-server pair` names.
 #[tauri::command]
 pub async fn remote_pair_host(code: String, label: Option<String>) -> AppResult<RemoteHost> {
     remote::pair(&HostList::default_list()?, secrets::store(), &code, label).await

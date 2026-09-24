@@ -1203,9 +1203,9 @@ function SessionWindowDialog({
         >
           <p>This window can't be shown here.</p>
           <p className="mt-1 text-meta text-muted">
-            It's in tmux session "{session.window.session}", which ai-profiles didn't start. ai-profiles only shows and
-            types into windows it opened, where it knows the keys reach Claude and not a shell. Open it in Terminal, or
-            copy the attach command.
+            It's in tmux session "{session.window.session}", which Remote Control Conductor didn't start. Remote Control
+            Conductor only shows and types into windows it opened, where it knows the keys reach Claude and not a shell.
+            Open it in Terminal, or copy the attach command.
           </p>
         </div>
       )}
@@ -1256,7 +1256,7 @@ type RemoteSessionRowProps = {
   onMove: () => void
   onRename: () => void
   onArchive: () => void
-  /** Open its window in ai-profiles. */
+  /** Open its window in Remote Control Conductor. */
   onView: () => void
 }
 

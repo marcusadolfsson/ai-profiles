@@ -54,15 +54,15 @@ pub fn run() {
                 let version = env!("CARGO_PKG_VERSION");
                 for (id, result) in launchers::gui::refresh_outdated(&all, version) {
                     match result {
-                        Ok(()) => eprintln!("ai-profiles: rebuilt the launcher of profile {id}"),
+                        Ok(()) => eprintln!("remote-control-conductor: rebuilt the launcher of profile {id}"),
                         Err(err) => {
-                            eprintln!("ai-profiles: left the launcher of profile {id}: {err}")
+                            eprintln!("remote-control-conductor: left the launcher of profile {id}: {err}")
                         }
                     }
                 }
                 // Archives made before archives were compressed.
                 for line in sessions::compress_old_archives() {
-                    eprintln!("ai-profiles: {line}");
+                    eprintln!("remote-control-conductor: {line}");
                 }
             });
 
@@ -73,13 +73,13 @@ pub fn run() {
             let about = MenuItem::with_id(
                 app,
                 OPEN_ABOUT_ID,
-                "About ai-profiles-remote",
+                "About Remote Control Conductor",
                 true,
                 None::<&str>,
             )?;
             let app_submenu = Submenu::with_items(
                 app,
-                "ai-profiles-remote",
+                "Remote Control Conductor",
                 true,
                 &[
                     &about,

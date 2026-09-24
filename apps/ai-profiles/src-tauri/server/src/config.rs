@@ -1,11 +1,15 @@
 //! Where the server keeps things, and what it can be told.
 //!
-//! - Config: `$XDG_CONFIG_HOME/ai-profiles-server/config.toml`, optional.
-//! - State: `$XDG_STATE_HOME/ai-profiles-server/` (clients, pending pairings,
+//! - Config: `$XDG_CONFIG_HOME/remote-control-conductor-server/config.toml`, optional.
+//! - State: `$XDG_STATE_HOME/remote-control-conductor-server/` (clients, pending pairings,
 //!   the TLS certificate), created 0700.
 //!
-//! `AI_PROFILES_SERVER_HOME` puts both under one folder, for tests and for
-//! running a second instance.
+//! `CONDUCTOR_SERVER_HOME` (or its old name, `AI_PROFILES_SERVER_HOME`) puts
+//! both under one folder, for tests and for running a second instance.
+//!
+//! Before the app was renamed, the folders were called `ai-profiles-server`.
+//! [`Paths::adopt_legacy`] moves them to their new names, certificate and
+//! paired clients included, so a Mac stays paired.
 
 use std::fs;
 use std::io;
@@ -16,7 +20,9 @@ use std::path::{Path, PathBuf};
 use ipnet::IpNet;
 use serde::Deserialize;
 
-pub const APP_DIR: &str = "ai-profiles-server";
+pub const APP_DIR: &str = "remote-control-conductor-server";
+/// What [`APP_DIR`] was called before the app was renamed.
+pub const LEGACY_APP_DIR: &str = "ai-profiles-server";
 pub const DEFAULT_PORT: u16 = 7443;
 
 #[derive(Debug, Clone)]
@@ -27,7 +33,9 @@ pub struct Paths {
 
 impl Paths {
     pub fn from_env() -> io::Result<Paths> {
-        if let Some(root) = std::env::var_os("AI_PROFILES_SERVER_HOME") {
+        let root = std::env::var_os("CONDUCTOR_SERVER_HOME")
+            .or_else(|| std::env::var_os("AI_PROFILES_SERVER_HOME"));
+        if let Some(root) = root {
             let root = PathBuf::from(root);
             return Ok(Paths {
                 config_dir: root.join("config"),
@@ -45,6 +53,27 @@ impl Paths {
             config_dir: xdg("XDG_CONFIG_HOME", ".config").join(APP_DIR),
             state_dir: xdg("XDG_STATE_HOME", ".local/state").join(APP_DIR),
         })
+    }
+
+    /// Move the folders from their names before the app was renamed, when
+    /// there's nothing under the new names yet. Says what it moved.
+    pub fn adopt_legacy(&self) -> io::Result<Vec<String>> {
+        let mut moved = Vec::new();
+        for current in [&self.config_dir, &self.state_dir] {
+            if current.file_name() != Some(std::ffi::OsStr::new(APP_DIR)) || current.exists() {
+                continue;
+            }
+            let legacy = current.with_file_name(LEGACY_APP_DIR);
+            if legacy.is_dir() {
+                fs::rename(&legacy, current)?;
+                moved.push(format!(
+                    "moved {} to {}",
+                    legacy.display(),
+                    current.display()
+                ));
+            }
+        }
+        Ok(moved)
     }
 
     pub fn config_file(&self) -> PathBuf {
@@ -217,6 +246,42 @@ impl Config {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_folders_move_from_their_old_names_once() {
+        let home = tempfile::tempdir().unwrap();
+        let paths = Paths {
+            config_dir: home.path().join(".config").join(APP_DIR),
+            state_dir: home.path().join(".local/state").join(APP_DIR),
+        };
+        let old_config = home.path().join(".config").join(LEGACY_APP_DIR);
+        let old_state = home.path().join(".local/state").join(LEGACY_APP_DIR);
+        fs::create_dir_all(&old_config).unwrap();
+        fs::write(old_config.join("config.toml"), "listen = \"0.0.0.0:7443\"").unwrap();
+        fs::create_dir_all(&old_state).unwrap();
+        fs::write(old_state.join("clients.json"), "[]").unwrap();
+
+        assert_eq!(paths.adopt_legacy().unwrap().len(), 2);
+        assert!(paths.config_file().is_file());
+        assert!(paths.state_dir.join("clients.json").is_file());
+        assert!(!old_config.exists() && !old_state.exists());
+
+        // Nothing under the old names any more, and the new ones are kept.
+        fs::create_dir_all(&old_state).unwrap();
+        assert!(paths.adopt_legacy().unwrap().is_empty());
+        assert!(old_state.exists());
+    }
+
+    #[test]
+    fn folders_given_by_the_environment_are_left_where_they_are() {
+        let root = tempfile::tempdir().unwrap();
+        let paths = Paths {
+            config_dir: root.path().join("config"),
+            state_dir: root.path().join("state"),
+        };
+        fs::create_dir_all(root.path().join(LEGACY_APP_DIR)).unwrap();
+        assert!(paths.adopt_legacy().unwrap().is_empty());
+    }
 
     #[test]
     fn accepts_wireguard_peers_by_default_but_not_past_an_allow_from() {

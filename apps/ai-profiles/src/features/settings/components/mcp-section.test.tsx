@@ -19,7 +19,7 @@ vi.mock('@/lib/commands', async () => {
   }
 })
 
-const path = '/Applications/ai-profiles-remote.app/Contents/MacOS/ai-profiles'
+const path = '/Applications/Remote Control Conductor.app/Contents/MacOS/remote-control-conductor'
 
 function renderSection() {
   renderWithQuery(
@@ -33,8 +33,12 @@ beforeEach(() => {
   vi.mocked(copyToClipboard).mockClear()
   vi.mocked(mcpServerCommand).mockResolvedValue({
     path,
-    claudeCode: `claude mcp add --scope user ai-profiles -- ${path} mcp`,
-    desktopJson: JSON.stringify({ mcpServers: { 'ai-profiles': { command: path, args: ['mcp'] } } }, null, 2),
+    claudeCode: `claude mcp add --scope user remote-control-conductor -- ${path} mcp`,
+    desktopJson: JSON.stringify(
+      { mcpServers: { 'remote-control-conductor': { command: path, args: ['mcp'] } } },
+      null,
+      2,
+    ),
   })
 })
 
@@ -43,9 +47,11 @@ describe('McpSection', () => {
     renderSection()
     const user = userEvent.setup()
     await user.click(
-      await screen.findByRole('button', { name: `Copy claude mcp add --scope user ai-profiles -- ${path} mcp` }),
+      await screen.findByRole('button', {
+        name: `Copy claude mcp add --scope user remote-control-conductor -- ${path} mcp`,
+      }),
     )
-    expect(copyToClipboard).toHaveBeenCalledWith(`claude mcp add --scope user ai-profiles -- ${path} mcp`)
+    expect(copyToClipboard).toHaveBeenCalledWith(`claude mcp add --scope user remote-control-conductor -- ${path} mcp`)
     await user.click(screen.getByRole('button', { name: 'Copy the Claude Desktop config' }))
     expect(vi.mocked(copyToClipboard).mock.calls[1]?.[0]).toContain('"args": [\n        "mcp"')
   })

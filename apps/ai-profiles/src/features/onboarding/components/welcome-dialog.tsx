@@ -9,7 +9,7 @@ export function WelcomeDialog({ open, onContinue }: Props) {
   return (
     <Dialog
       open={open}
-      title="Welcome to ai-profiles"
+      title="Welcome to Remote Control Conductor"
       description="Run multiple isolated Claude and ChatGPT accounts on one Mac — desktop apps and CLIs, side by side."
       onClose={onContinue}
       onSubmit={onContinue}

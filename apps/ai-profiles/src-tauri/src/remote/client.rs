@@ -118,7 +118,7 @@ impl HostClient {
         let value = response.json::<T>().await.map_err(|_| {
             remote_error(
                 "bad_response",
-                format!("{} answered with something ai-profiles can't read. Is it running a matching ai-profiles-server?", self.host.label),
+                format!("{} answered with something ai-profiles can't read. Is it running a matching remote-control-conductor-server?", self.host.label),
             )
         })?;
         Ok(Answer { value, address })
@@ -192,7 +192,7 @@ impl HostClient {
         Err(remote_error(
             "offline",
             format!(
-                "{} can't be reached. Is it on, on Tailscale, and running ai-profiles-server?",
+                "{} can't be reached. Is it on, on Tailscale, and running remote-control-conductor-server?",
                 self.host.label
             ),
         ))

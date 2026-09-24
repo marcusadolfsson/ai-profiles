@@ -18,7 +18,7 @@ type Props = {
 const labelClasses = 'mb-1.5 block font-mono text-[11.5px] font-medium uppercase tracking-[0.08em] text-muted'
 
 /**
- * Pairing with a remote host: paste the code `ai-profiles-server pair`
+ * Pairing with a remote host: paste the code `remote-control-conductor-server pair`
  * printed. The code is read here first, so the addresses and the
  * certificate's fingerprint can be checked against what the server printed
  * before anything is sent.
@@ -86,7 +86,7 @@ export function PairHostDialog({ open, onClose, onPaired }: Props) {
     <Dialog
       open={open}
       title="Pair a remote host"
-      description="On the Linux machine, run ai-profiles-server pair and paste the code it prints."
+      description="On the Linux machine, run remote-control-conductor-server pair and paste the code it prints."
       onClose={onClose}
       onSubmit={handlePair}
       closeOnOutsideClick={false}
@@ -135,8 +135,8 @@ export function PairHostDialog({ open, onClose, onPaired }: Props) {
             <p className="text-ink-soft">Certificate fingerprint:</p>
             <p className="break-all font-mono text-mono text-muted-strong">{preview.fingerprint}</p>
             <p className="text-muted">
-              It should match the one the server printed. ai-profiles will trust this certificate and no other for this
-              host.
+              It should match the one the server printed. Remote Control Conductor will trust this certificate and no
+              other for this host.
             </p>
           </div>
         ) : null}

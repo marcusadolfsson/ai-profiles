@@ -95,7 +95,10 @@ impl Drop for Server {
 fn it_introduces_itself_and_lists_its_tools() {
     let mut server = Server::start();
     let hello = server.initialize();
-    assert_eq!(hello["result"]["serverInfo"]["name"], "ai-profiles");
+    assert_eq!(
+        hello["result"]["serverInfo"]["name"],
+        "remote-control-conductor"
+    );
     assert!(hello["result"]["capabilities"]["tools"].is_object());
     assert!(hello["result"]["instructions"]
         .as_str()

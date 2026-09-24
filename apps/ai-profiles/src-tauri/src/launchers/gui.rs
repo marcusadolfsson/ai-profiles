@@ -461,8 +461,9 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let ours = plist::bundle_identifier(&fixture());
         let old = "/Applications/ai-profiles.app/Contents/MacOS/ai-profiles";
-        let new =
-            Path::new("/Applications/ai-profiles-remote.app/Contents/MacOS/ai-profiles-remote");
+        let new = Path::new(
+            "/Applications/Remote Control Conductor.app/Contents/MacOS/remote-control-conductor",
+        );
         let wrapper = launcher_bundle(
             dir.path(),
             "Wrapper.app",

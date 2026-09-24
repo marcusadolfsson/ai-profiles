@@ -1,4 +1,4 @@
-//! Trusting an ai-profiles-server by its certificate's fingerprint.
+//! Trusting an remote-control-conductor-server by its certificate's fingerprint.
 //!
 //! The server signs its own certificate, so there is no CA to check against.
 //! What stands in for one is the fingerprint the pairing code carried: a

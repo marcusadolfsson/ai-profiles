@@ -1,4 +1,4 @@
-//! The HTTP API between ai-profiles (client) and ai-profiles-server, as
+//! The HTTP API between ai-profiles (client) and remote-control-conductor-server, as
 //! types both sides compile. JSON is camelCase.
 //!
 //! Versioning: routes live under `/v1`. Adding a field or a route keeps
@@ -32,7 +32,7 @@ pub struct Ping {
 #[serde(rename_all = "camelCase")]
 pub struct PairRequest {
     pub secret: String,
-    /// Shown by `ai-profiles-server clients`, e.g. the Mac's name.
+    /// Shown by `remote-control-conductor-server clients`, e.g. the Mac's name.
     pub client_name: String,
 }
 

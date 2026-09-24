@@ -430,7 +430,7 @@ export type AccountStatus =
   | { status: 'signedOut' }
   | { status: 'unknown' }
 
-/** A Linux machine running ai-profiles-server that this Mac is paired with. */
+/** A Linux machine running remote-control-conductor-server that this Mac is paired with. */
 export type RemoteHost = {
   id: string
   /** What the sidebar calls it. */

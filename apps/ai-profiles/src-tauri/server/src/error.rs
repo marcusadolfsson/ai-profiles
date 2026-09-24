@@ -64,7 +64,7 @@ impl ApiError {
         ApiError::new(
             StatusCode::INTERNAL_SERVER_ERROR,
             "internal",
-            "The server hit an error. Its log (journalctl --user -u ai-profiles-server) says more.",
+            "The server hit an error. Its log (journalctl --user -u remote-control-conductor-server) says more.",
         )
     }
 }

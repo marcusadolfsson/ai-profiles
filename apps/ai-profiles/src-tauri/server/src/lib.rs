@@ -1,4 +1,4 @@
-//! ai-profiles-server: runs on a Linux machine as the user, and lets the
+//! remote-control-conductor-server: runs on a Linux machine as the user, and lets the
 //! ai-profiles app list that machine's Claude accounts and sessions (and, in
 //! later versions, start and resume them in tmux with Remote Control).
 //!

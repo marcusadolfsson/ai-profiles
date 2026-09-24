@@ -792,12 +792,12 @@ describe('PairHostDialog', () => {
   it('says what went wrong when the code is bad or pairing fails', async () => {
     vi.mocked(remotePreviewPairing).mockRejectedValue({
       kind: 'Validation',
-      message: "validation error: that isn't an ai-profiles pairing code",
+      message: "validation error: that isn't a Remote Control Conductor pairing code",
     })
     renderWithQuery(<PairHostDialog open onClose={vi.fn()} />)
     const user = userEvent.setup()
     await user.type(screen.getByLabelText('Pairing code'), 'hello')
-    expect(await screen.findByText("that isn't an ai-profiles pairing code")).toBeInTheDocument()
+    expect(await screen.findByText("that isn't a Remote Control Conductor pairing code")).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^Pair/ })).toBeDisabled()
   })
 })
@@ -1131,7 +1131,9 @@ describe('the terminal button', () => {
     await user.click(await screen.findByRole('button', { name: 'Open its window' }))
 
     const dialog = await screen.findByRole('dialog', { name: 'Brain-Dev-Server' })
-    expect(within(dialog).getByRole('alert')).toHaveTextContent(/tmux session "0", which ai-profiles didn't start/)
+    expect(within(dialog).getByRole('alert')).toHaveTextContent(
+      /tmux session "0", which Remote Control Conductor didn't start/,
+    )
     expect(within(dialog).queryByRole('application')).toBeNull()
     expect(remoteWindowScreen).not.toHaveBeenCalled()
     await user.click(within(dialog).getByRole('button', { name: /Open in Terminal/ }))

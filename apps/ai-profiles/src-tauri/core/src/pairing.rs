@@ -1,4 +1,4 @@
-//! The pairing code `ai-profiles-server pair` prints and ai-profiles reads:
+//! The pairing code `remote-control-conductor-server pair` prints and ai-profiles reads:
 //! `aip1.` + base64url(JSON) holding where the server listens, a one-time
 //! secret, and the fingerprint of the server's certificate.
 //!
@@ -35,7 +35,7 @@ pub enum PairingError {
 impl std::fmt::Display for PairingError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         formatter.write_str(match self {
-            PairingError::NotACode => "that isn't an ai-profiles pairing code",
+            PairingError::NotACode => "that isn't a Remote Control Conductor pairing code",
             PairingError::Malformed => "the pairing code is damaged or from a newer server",
         })
     }

@@ -45,7 +45,7 @@ describe('AboutDialog', () => {
     vi.mocked(getAppMetadata).mockResolvedValue({
       ...metadata,
       authors: ['Marcus Adolfsson', 'Bartek Czyż <bartek@czyz.it>'],
-      repository: 'https://github.com/marcusadolfsson/ai-profiles-remote',
+      repository: 'https://github.com/marcusadolfsson/remote-control-conductor',
     })
     renderWithQuery(
       <ToastProvider>
@@ -54,7 +54,7 @@ describe('AboutDialog', () => {
     )
 
     expect(await screen.findByText('Marcus Adolfsson, Bartek Czyż')).toBeInTheDocument()
-    expect(screen.getByText('github.com/marcusadolfsson/ai-profiles-remote')).toBeInTheDocument()
+    expect(screen.getByText('github.com/marcusadolfsson/remote-control-conductor')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /ai-profiles by Bartek Czyż/ }))
     expect(openExternalUrl).toHaveBeenCalledWith('https://github.com/bartekczyz/ai-profiles')
   })

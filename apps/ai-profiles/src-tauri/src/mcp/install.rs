@@ -16,7 +16,32 @@ use crate::app_kind::AppKind;
 use crate::error::{AppError, AppResult};
 
 /// What the server is called in a client's configuration.
-pub const SERVER_NAME: &str = "ai-profiles";
+pub const SERVER_NAME: &str = "remote-control-conductor";
+
+/// What it was called before the app was renamed. An entry under one of these
+/// that starts this app (under either name) is replaced by [`SERVER_NAME`].
+const LEGACY_NAMES: &[&str] = &["ai-profiles"];
+
+/// Pure: whether `entry` starts this app's server, as it is or as it was
+/// called before (`…/MacOS/ai-profiles mcp`).
+fn starts_this_app(entry: &Value) -> bool {
+    let binary = entry["command"]
+        .as_str()
+        .and_then(|command| Path::new(command).file_name())
+        .and_then(|name| name.to_str());
+    matches!(binary, Some("remote-control-conductor" | "ai-profiles"))
+        && entry["args"] == json!([crate::cli::MCP_COMMAND])
+}
+
+/// Pure: the legacy entries in `servers` (an `mcpServers` object) that start
+/// this app.
+fn legacy_entries(servers: &serde_json::Map<String, Value>) -> Vec<String> {
+    LEGACY_NAMES
+        .iter()
+        .filter(|name| servers.get(**name).is_some_and(starts_this_app))
+        .map(|name| (*name).to_owned())
+        .collect()
+}
 
 /// How long one `claude mcp` call gets.
 const CLAUDE_TIMEOUT: Duration = Duration::from_secs(30);
@@ -151,8 +176,12 @@ fn with_server(config: Option<&str>, entry: &Value) -> Result<Option<String>, St
     let Some(servers) = servers.as_object_mut() else {
         return Err("its mcpServers isn't a JSON object, so it was left alone".into());
     };
-    if servers.get(SERVER_NAME) == Some(entry) {
+    let legacy = legacy_entries(servers);
+    if servers.get(SERVER_NAME) == Some(entry) && legacy.is_empty() {
         return Ok(None);
+    }
+    for name in legacy {
+        servers.remove(&name);
     }
     servers.insert(SERVER_NAME.to_owned(), entry.clone());
     serde_json::to_string_pretty(&config)
@@ -179,25 +208,37 @@ fn write_atomically(file: &Path, text: &str) -> AppResult<()> {
         .parent()
         .ok_or_else(|| AppError::Validation("the config has no folder".into()))?;
     fs::create_dir_all(parent)?;
-    let temporary = parent.join(".claude_desktop_config.json.ai-profiles.tmp");
+    let temporary = parent.join(".claude_desktop_config.json.conductor.tmp");
     fs::write(&temporary, format!("{text}\n"))?;
     fs::rename(&temporary, file)?;
     Ok(())
 }
 
-/// Pure: whether `claude_json` (Claude Code's own `.claude.json`) already
-/// has the server, as `entry` says to start it.
-fn claude_code_has(claude_json: Option<&str>, entry: &Value) -> bool {
-    let Some(config) = claude_json.and_then(|text| serde_json::from_str::<Value>(text).ok()) else {
-        return false;
-    };
-    let Some(found) = config
-        .get("mcpServers")
-        .and_then(|servers| servers.get(SERVER_NAME))
+/// What Claude Code's own `.claude.json` says about the server.
+#[derive(Debug, Default, PartialEq, Eq)]
+struct InClaudeCode {
+    /// It has the server, as `entry` says to start it.
+    current: bool,
+    /// Entries under an old name that start this app, to remove.
+    legacy: Vec<String>,
+}
+
+/// Pure: what `claude_json` has of the server.
+fn in_claude_code(claude_json: Option<&str>, entry: &Value) -> InClaudeCode {
+    let config = claude_json.and_then(|text| serde_json::from_str::<Value>(text).ok());
+    let Some(servers) = config
+        .as_ref()
+        .and_then(|config| config.get("mcpServers"))
+        .and_then(Value::as_object)
     else {
-        return false;
+        return InClaudeCode::default();
     };
-    found.get("command") == entry.get("command") && found.get("args") == entry.get("args")
+    InClaudeCode {
+        current: servers.get(SERVER_NAME).is_some_and(|found| {
+            found.get("command") == entry.get("command") && found.get("args") == entry.get("args")
+        }),
+        legacy: legacy_entries(servers),
+    }
 }
 
 /// Add the server to a profile's Claude Code, through `claude mcp add`, so
@@ -209,11 +250,23 @@ fn add_to_claude_code(
     claude_json: &Path,
     entry: &Value,
 ) -> Result<bool, String> {
-    if claude_code_has(fs::read_to_string(claude_json).ok().as_deref(), entry) {
+    let found = in_claude_code(fs::read_to_string(claude_json).ok().as_deref(), entry);
+    if found.current && found.legacy.is_empty() {
         return Ok(false);
     }
     let claude = claude.ok_or("Claude Code isn't installed")?;
     let path = entry["command"].as_str().unwrap_or_default();
+    // The server under the app's old name goes, so Claude doesn't see it twice.
+    for name in &found.legacy {
+        run_claude(
+            claude,
+            config_dir,
+            &["mcp", "remove", "--scope", "user", name],
+        )?;
+    }
+    if found.current {
+        return Ok(true);
+    }
     // An entry that starts an older copy of the app goes first; there's none
     // the first time, and then this fails harmlessly.
     let _ = run_claude(
@@ -266,7 +319,9 @@ mod tests {
     use super::*;
 
     fn entry() -> Value {
-        server_entry("/Applications/ai-profiles-remote.app/Contents/MacOS/ai-profiles")
+        server_entry(
+            "/Applications/Remote Control Conductor.app/Contents/MacOS/remote-control-conductor",
+        )
     }
 
     #[test]
@@ -276,7 +331,10 @@ mod tests {
             serde_json::from_str(&with_server(Some(config), &entry()).unwrap().unwrap()).unwrap();
         assert_eq!(updated["globalShortcut"], "Cmd+Space");
         assert_eq!(updated["mcpServers"]["other"]["command"], "x");
-        assert_eq!(updated["mcpServers"]["ai-profiles"]["args"], json!(["mcp"]));
+        assert_eq!(
+            updated["mcpServers"]["remote-control-conductor"]["args"],
+            json!(["mcp"])
+        );
 
         let again = serde_json::to_string(&updated).unwrap();
         assert_eq!(with_server(Some(&again), &entry()), Ok(None));
@@ -287,7 +345,10 @@ mod tests {
         for config in [None, Some(""), Some("  \n")] {
             let updated: Value =
                 serde_json::from_str(&with_server(config, &entry()).unwrap().unwrap()).unwrap();
-            assert_eq!(updated, json!({ "mcpServers": { "ai-profiles": entry() } }));
+            assert_eq!(
+                updated,
+                json!({ "mcpServers": { "remote-control-conductor": entry() } })
+            );
         }
     }
 
@@ -307,23 +368,71 @@ mod tests {
         assert_eq!(add_to_desktop_config(&file, &entry()), Ok(true));
         assert_eq!(add_to_desktop_config(&file, &entry()), Ok(false));
         let written: Value = serde_json::from_str(&fs::read_to_string(&file).unwrap()).unwrap();
-        assert_eq!(written["mcpServers"]["ai-profiles"], entry());
+        assert_eq!(written["mcpServers"]["remote-control-conductor"], entry());
+    }
+
+    #[test]
+    fn the_entry_under_the_old_name_is_replaced_and_anothers_is_kept() {
+        let config = json!({ "mcpServers": {
+            "ai-profiles": { "command": "/Applications/ai-profiles-remote.app/Contents/MacOS/ai-profiles", "args": ["mcp"] },
+            "other": { "command": "/usr/bin/other", "args": ["mcp"] },
+        } })
+        .to_string();
+        let updated: Value =
+            serde_json::from_str(&with_server(Some(&config), &entry()).unwrap().unwrap()).unwrap();
+        let servers = updated["mcpServers"].as_object().unwrap();
+        assert!(!servers.contains_key("ai-profiles"));
+        assert_eq!(servers["remote-control-conductor"], entry());
+        assert_eq!(servers["other"]["command"], "/usr/bin/other");
+
+        // Someone else's server that happens to be called ai-profiles stays.
+        let theirs = json!({ "mcpServers": { "ai-profiles": { "command": "npx", "args": ["ai-profiles-mcp"] } } })
+            .to_string();
+        let updated: Value =
+            serde_json::from_str(&with_server(Some(&theirs), &entry()).unwrap().unwrap()).unwrap();
+        assert_eq!(updated["mcpServers"]["ai-profiles"]["command"], "npx");
     }
 
     #[test]
     fn claude_code_has_it_only_when_it_starts_this_app() {
         let entry = entry();
-        let with = |command: &str| {
-            json!({ "mcpServers": { "ai-profiles": { "type": "stdio", "command": command, "args": ["mcp"], "env": {} } } })
+        let with = |name: &str, command: &str| {
+            json!({ "mcpServers": { name: { "type": "stdio", "command": command, "args": ["mcp"], "env": {} } } })
                 .to_string()
         };
-        assert!(claude_code_has(
-            Some(&with(entry["command"].as_str().unwrap())),
-            &entry
-        ));
-        assert!(!claude_code_has(Some(&with("/old/ai-profiles")), &entry));
-        assert!(!claude_code_has(Some("{}"), &entry));
-        assert!(!claude_code_has(None, &entry));
+        let current = entry["command"].as_str().unwrap();
+        assert_eq!(
+            in_claude_code(Some(&with("remote-control-conductor", current)), &entry),
+            InClaudeCode {
+                current: true,
+                legacy: vec![]
+            }
+        );
+        assert_eq!(
+            in_claude_code(
+                Some(&with(
+                    "remote-control-conductor",
+                    "/old/remote-control-conductor"
+                )),
+                &entry
+            ),
+            InClaudeCode::default()
+        );
+        assert_eq!(
+            in_claude_code(
+                Some(&with(
+                    "ai-profiles",
+                    "/Applications/ai-profiles-remote.app/Contents/MacOS/ai-profiles"
+                )),
+                &entry
+            ),
+            InClaudeCode {
+                current: false,
+                legacy: vec!["ai-profiles".into()]
+            }
+        );
+        assert_eq!(in_claude_code(Some("{}"), &entry), InClaudeCode::default());
+        assert_eq!(in_claude_code(None, &entry), InClaudeCode::default());
     }
 
     #[test]

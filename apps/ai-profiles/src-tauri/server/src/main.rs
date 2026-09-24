@@ -4,14 +4,14 @@ use std::sync::Arc;
 
 use ai_profiles_core::pairing::display_fingerprint;
 use ai_profiles_server::certs::Identity;
-use ai_profiles_server::config::{Config, Paths};
+use ai_profiles_server::config::{self, Config, Paths};
 use ai_profiles_server::revive;
 use ai_profiles_server::routes::ServerState;
 use ai_profiles_server::store::{Store, PAIRING_TTL};
 use ai_profiles_server::{accounts, hostinfo, moves, pairing_code, serve, service, setup};
 use clap::{Parser, Subcommand};
 
-/// Lets ai-profiles on your Mac see and start the Claude sessions on this machine.
+/// Lets Remote Control Conductor on your Mac see and start the Claude sessions on this machine.
 #[derive(Parser)]
 #[command(version, about)]
 struct Cli {
@@ -27,7 +27,7 @@ enum Command {
         #[arg(long)]
         listen: Option<std::net::SocketAddr>,
     },
-    /// Print a one-time code to paste into ai-profiles (Settings → Remote hosts).
+    /// Print a one-time code to paste into Remote Control Conductor (Settings → Remote hosts).
     Pair {
         /// Name the client this code will pair, e.g. "Marcus's MacBook".
         #[arg(long)]
@@ -64,7 +64,7 @@ fn main() -> ExitCode {
     match run(Cli::parse()) {
         Ok(()) => ExitCode::SUCCESS,
         Err(error) => {
-            eprintln!("ai-profiles-server: {error}");
+            eprintln!("remote-control-conductor-server: {error}");
             ExitCode::FAILURE
         }
     }
@@ -93,6 +93,28 @@ fn inherited_session_variables(
 
 fn run(cli: Cli) -> io::Result<()> {
     let paths = Paths::from_env()?;
+    // The server was called ai-profiles-server before the app was renamed.
+    // Setting it up again replaces the old service, which is stopped before
+    // its folders move out from under it.
+    if matches!(cli.command, Command::InstallService { .. } | Command::Setup)
+        && service::retire_legacy(&config::home()?)?
+    {
+        println!(
+            "Stopped and removed the service under the old name, {}. Its sessions keep running.",
+            service::LEGACY_UNIT_NAME
+        );
+    }
+    if service::legacy_active() {
+        eprintln!(
+            "remote-control-conductor-server: the server under its old name ({}) is still running. \
+             `remote-control-conductor-server install-service` switches over to this one.",
+            service::LEGACY_UNIT_NAME
+        );
+    } else {
+        for moved in paths.adopt_legacy()? {
+            eprintln!("remote-control-conductor-server: {moved}");
+        }
+    }
     let mut config = Config::load(&paths)?;
     match cli.command {
         Command::Serve { listen } => {
@@ -105,7 +127,7 @@ fn run(cli: Cli) -> io::Result<()> {
         Command::Clients => {
             let clients = Store::new(paths.ensure_state_dir()?).clients()?;
             if clients.is_empty() {
-                println!("No clients are paired. Run `ai-profiles-server pair` to pair one.");
+                println!("No clients are paired. Run `remote-control-conductor-server pair` to pair one.");
             }
             for client in clients {
                 println!(
@@ -169,7 +191,7 @@ fn serve_forever(config: Config, paths: &Paths) -> io::Result<()> {
     runtime.block_on(async move {
         let listener = tokio::net::TcpListener::bind(config.listen).await?;
         eprintln!(
-            "ai-profiles-server {} listening on {} (certificate {})",
+            "remote-control-conductor-server {} listening on {} (certificate {})",
             env!("CARGO_PKG_VERSION"),
             config.listen,
             display_fingerprint(&identity.fingerprint)
@@ -230,7 +252,7 @@ fn pair(
     hosts: Vec<String>,
 ) -> io::Result<()> {
     let issued = pairing_code::issue(config, paths, label, hosts)?;
-    println!("Paste this into ai-profiles → Settings → Remote hosts → Pair a host.");
+    println!("Paste this into Remote Control Conductor → Settings → Remote hosts → Pair a host.");
     println!(
         "It works once, for the next {} minutes.\n",
         PAIRING_TTL.num_minutes()
@@ -239,7 +261,7 @@ fn pair(
     println!("Addresses:   {}", issued.hosts.join(", "));
     println!("Certificate: {}", issued.fingerprint);
     println!(
-        "(ai-profiles shows the same certificate fingerprint before it pairs: check they match.)"
+        "(Remote Control Conductor shows the same certificate fingerprint before it pairs: check they match.)"
     );
     Ok(())
 }

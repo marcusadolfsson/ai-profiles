@@ -5,7 +5,10 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-pub const UNIT_NAME: &str = "ai-profiles-server.service";
+pub const UNIT_NAME: &str = "remote-control-conductor-server.service";
+
+/// The service's name before the app was renamed (from ai-profiles-remote).
+pub const LEGACY_UNIT_NAME: &str = "ai-profiles-server.service";
 
 /// The unit file. `PATH` is the one `install-service` ran with, because a
 /// user service otherwise gets systemd's bare PATH, which lacks the places
@@ -18,7 +21,7 @@ pub const UNIT_NAME: &str = "ai-profiles-server.service";
 pub fn unit_text(executable: &Path, path_env: &str) -> String {
     format!(
         "[Unit]\n\
-         Description=ai-profiles server: Claude sessions for ai-profiles on this machine\n\
+         Description=Remote Control Conductor server: Claude sessions on this machine, for the Mac app\n\
          After=network-online.target\n\
          \n\
          [Service]\n\
@@ -71,6 +74,30 @@ fn systemctl(args: &[&str]) -> io::Result<()> {
     }
 }
 
+/// Whether the service under its old name is running: this server's
+/// previous binary, which still uses the folders under their old names.
+pub fn legacy_active() -> bool {
+    Command::new("systemctl")
+        .args(["--user", "--quiet", "is-active", LEGACY_UNIT_NAME])
+        .status()
+        .is_ok_and(|status| status.success())
+}
+
+/// Stop and remove the service under its old name, if there is one. Its
+/// sessions keep running: the unit had `KillMode=process`, so only the old
+/// server stops, not the tmux server it started. `Ok(true)` when there was one.
+pub fn retire_legacy(home: &Path) -> io::Result<bool> {
+    let unit = home.join(".config/systemd/user").join(LEGACY_UNIT_NAME);
+    if !unit.exists() {
+        return Ok(false);
+    }
+    // Already stopped or never enabled: nothing to undo, and the file goes anyway.
+    let _ = systemctl(&["disable", "--now", LEGACY_UNIT_NAME]);
+    fs::remove_file(&unit)?;
+    systemctl(&["daemon-reload"])?;
+    Ok(true)
+}
+
 /// Whether the user's services keep running after they log out.
 pub fn lingering() -> Option<bool> {
     let user = std::env::var("USER").ok()?;
@@ -88,10 +115,10 @@ mod tests {
     #[test]
     fn the_unit_keeps_sessions_alive_across_restarts() {
         let text = unit_text(
-            Path::new("/home/m/bin/ai-profiles-server"),
+            Path::new("/home/m/bin/remote-control-conductor-server"),
             "/home/m/.local/bin:/usr/bin",
         );
-        assert!(text.contains("ExecStart=/home/m/bin/ai-profiles-server serve\n"));
+        assert!(text.contains("ExecStart=/home/m/bin/remote-control-conductor-server serve\n"));
         assert!(text.contains("Environment=PATH=/home/m/.local/bin:/usr/bin\n"));
         assert!(text.contains("KillMode=process\n"));
         assert!(!text.contains("PrivateTmp"));

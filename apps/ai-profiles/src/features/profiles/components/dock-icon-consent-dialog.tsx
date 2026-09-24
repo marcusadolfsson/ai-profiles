@@ -126,7 +126,7 @@ export function DockIconConsentDialog({ open, app, onClose, onConfirm }: Props) 
       stacked
       open={open}
       title={onConfirm === undefined ? 'A Dock icon of its own' : 'Give this profile its own Dock icon?'}
-      description={`ai-profiles makes a copy of ${displayName} for this profile, using almost no extra disk space. You can turn it off again in Edit profile, which deletes the copy and goes back to the regular app. Your data stays where it is either way.`}
+      description={`Remote Control Conductor makes a copy of ${displayName} for this profile, using almost no extra disk space. You can turn it off again in Edit profile, which deletes the copy and goes back to the regular app. Your data stays where it is either way.`}
       className="w-[min(780px,calc(100%-64px))]"
       onClose={onClose}
       onSubmit={onConfirm === undefined ? onClose : handleConfirm}

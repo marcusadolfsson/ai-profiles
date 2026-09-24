@@ -1,8 +1,10 @@
 <p align="center">
-  <img alt="ai-profiles-remote" src="apps/ai-profiles/public/icon.svg" width="96">
+  <img alt="Remote Control Conductor" src="apps/ai-profiles/public/icon.svg" width="96">
 </p>
 
-<h1 align="center">ai-profiles-remote</h1>
+<h1 align="center">Remote Control Conductor</h1>
+
+<p align="center"><sub>Formerly ai-profiles-remote.</sub></p>
 
 <p align="center">
   <b>Manage Claude Code CLI for Remote Control, across several servers and accounts.</b><br>
@@ -11,7 +13,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/marcusadolfsson/ai-profiles-remote/releases/latest"><b>Download for macOS</b></a>
+  <a href="https://github.com/marcusadolfsson/remote-control-conductor/releases/latest"><b>Download for macOS</b></a>
   &nbsp;·&nbsp;
   <a href="#get-started-in-three-steps">Get started</a>
   &nbsp;·&nbsp;
@@ -26,7 +28,7 @@
 
 Remote Control lets you work with Claude Code from the Claude app on your phone, another Mac or the web.
 But the session still has to run somewhere, and someone has to start it, keep it alive, restart it
-when Claude updates, and decide which account it runs under. **ai-profiles-remote does that job, for every
+when Claude updates, and decide which account it runs under. **Remote Control Conductor does that job, for every
 server and every account, from your Mac.** And because it's also an MCP server, you can just ask Claude:
 *"restart the claudemulti session on xjopa1"*.
 
@@ -97,7 +99,7 @@ Set it up under **Settings → MCP server**: **Add to my Claude profiles** adds 
 this Mac, desktop app and Claude Code both. Or add it by hand:
 
 ```sh
-claude mcp add --scope user ai-profiles -- /Applications/ai-profiles-remote.app/Contents/MacOS/ai-profiles mcp
+claude mcp add --scope user remote-control-conductor -- '/Applications/Remote Control Conductor.app/Contents/MacOS/remote-control-conductor' mcp
 ```
 
 ### 🧑‍🤝‍🧑 Multiple profiles for Claude Desktop
@@ -118,16 +120,16 @@ and its own usage meters. Each Claude profile keeps its own Claude Code sessions
 ## Get started in three steps
 
 **1. Install the app.** Download the `.dmg` from
-[Releases](https://github.com/marcusadolfsson/ai-profiles-remote/releases/latest). It's signed and notarized.
-Drag `ai-profiles-remote.app` to Applications.
+[Releases](https://github.com/marcusadolfsson/remote-control-conductor/releases/latest). It's signed and notarized.
+Drag `Remote Control Conductor.app` to Applications.
 
 **2. Install the server** on each Linux machine:
 
 ```sh
 sudo apt install tmux
 curl -fsSL https://claude.ai/install.sh | bash
-mkdir -p ~/.local/bin && curl -fsSL https://github.com/marcusadolfsson/ai-profiles-remote/releases/latest/download/ai-profiles-server-$(uname -m)-linux -o ~/.local/bin/ai-profiles-server && chmod +x ~/.local/bin/ai-profiles-server
-ai-profiles-server setup
+mkdir -p ~/.local/bin && curl -fsSL https://github.com/marcusadolfsson/remote-control-conductor/releases/latest/download/remote-control-conductor-server-$(uname -m)-linux -o ~/.local/bin/remote-control-conductor-server && chmod +x ~/.local/bin/remote-control-conductor-server
+remote-control-conductor-server setup
 ```
 
 `setup` walks you through it:
@@ -143,9 +145,16 @@ are in the app under **How to set up a host**.
   <img alt="Settings, Remote hosts, with the setup guide" src="docs/screenshots/remote-setup-guide.png" width="720">
 </p>
 
-Later, `ai-profiles-server doctor` checks an install, `pair` makes a new code, and `revoke` cuts a Mac off.
+Later, `remote-control-conductor-server doctor` checks an install, `pair` makes a new code, and `revoke` cuts a Mac off.
 The server is a single static binary. You can also build it from source with
-`cargo install --locked --git https://github.com/marcusadolfsson/ai-profiles-remote ai-profiles-server`.
+`cargo install --locked --git https://github.com/marcusadolfsson/remote-control-conductor remote-control-conductor-server`.
+
+**Coming from ai-profiles-remote?** Install the new app and delete `ai-profiles-remote.app`: your profiles,
+paired hosts and settings carry over. On each host, fetch the server with the command above and run
+`remote-control-conductor-server install-service`. It stops the old `ai-profiles-server` service, moves its
+settings and certificate to their new folders (so your Mac stays paired), and starts the new one; running
+sessions aren't touched. Then `rm ~/.local/bin/ai-profiles-server`. In the app, **Settings → MCP server → Add
+to my Claude profiles** replaces the old `ai-profiles` MCP entry with `remote-control-conductor`.
 
 The app doesn't update itself. The upstream updater would replace it with a build that doesn't have these
 features, so it's switched off. Take new versions from Releases.
@@ -165,7 +174,7 @@ between accounts:
   [remy](https://github.com/padamchopra/remy)) run or mirror sessions. Most work with one account, and most
   go through a UI or relay of their own.
 
-What ai-profiles-remote adds:
+What Remote Control Conductor adds:
 
 1. **One place for accounts and their sessions,** on the Mac and on your servers, side by side.
 2. **Moving a session between accounts,** memory and all.
@@ -220,8 +229,8 @@ record together with the transcript, so this can't happen on a move.
 ## Building from source
 
 ```sh
-git clone https://github.com/marcusadolfsson/ai-profiles-remote.git
-cd ai-profiles-remote
+git clone https://github.com/marcusadolfsson/remote-control-conductor.git
+cd remote-control-conductor
 pnpm install
 pnpm --filter ai-profiles tauri build
 ```
@@ -230,7 +239,7 @@ The `.app` lands in `apps/ai-profiles/src-tauri/target/release/bundle/macos/`, a
 `dmg/`. A local build isn't notarized, so macOS warns on first launch: right-click the app → Open → Open.
 
 To build the server for Linux from a Mac, run
-`cargo zigbuild --release -p ai-profiles-server --target x86_64-unknown-linux-musl` in
+`cargo zigbuild --release -p remote-control-conductor-server --target x86_64-unknown-linux-musl` in
 `apps/ai-profiles/src-tauri`.
 
 **Tests:** run `cargo test` and `cargo clippy --all-targets -- -D warnings` in `apps/ai-profiles/src-tauri`,

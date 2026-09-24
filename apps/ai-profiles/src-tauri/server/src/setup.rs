@@ -1,4 +1,4 @@
-//! `ai-profiles-server setup`: the steps to a working server, one at a time,
+//! `remote-control-conductor-server setup`: the steps to a working server, one at a time,
 //! each checked first so that what's already done is only confirmed, and
 //! only what isn't is asked about.
 //!
@@ -45,7 +45,7 @@ pub fn run(paths: &Paths) -> io::Result<()> {
             "setup asks questions: run it in a terminal",
         ));
     }
-    println!("Setting up ai-profiles-server. Each step is checked first; press Ctrl-C to stop at any time.");
+    println!("Setting up remote-control-conductor-server. Each step is checked first; press Ctrl-C to stop at any time.");
 
     step(1, "tmux");
     loop {
@@ -86,7 +86,7 @@ pub fn run(paths: &Paths) -> io::Result<()> {
     let found = accounts::discover(&config);
     if found.is_empty() {
         println!(
-            "  No profiles in {} yet. Add them from ai-profiles once paired: New Profile → Claude CLI Remote.",
+            "  No profiles in {} yet. Add them from Remote Control Conductor once paired: New Profile → Claude CLI Remote.",
             config.accounts_base.display()
         );
     } else {
@@ -234,11 +234,13 @@ pub fn run(paths: &Paths) -> io::Result<()> {
     }
     if ask("  Pair a Mac now?", before == 0)? {
         let issued = pairing_code::issue(&config, paths, None, Vec::new())?;
-        println!("\n  In ai-profiles: Settings → Remote hosts → Pair a host, and paste:\n");
+        println!(
+            "\n  In Remote Control Conductor: Settings → Remote hosts → Pair a host, and paste:\n"
+        );
         println!("  {}\n", issued.code);
         println!("  Addresses:   {}", issued.hosts.join(", "));
         println!("  Certificate: {}", issued.fingerprint);
-        println!("  (ai-profiles shows the same fingerprint before it pairs: check they match.)\n");
+        println!("  (Remote Control Conductor shows the same fingerprint before it pairs: check they match.)\n");
         print!("  Waiting for it to pair…");
         io::stdout().flush()?;
         let deadline = Instant::now() + PAIR_WAIT;
@@ -255,13 +257,17 @@ pub fn run(paths: &Paths) -> io::Result<()> {
             }
             if Instant::now() > deadline {
                 println!();
-                missing("the code has expired. Run `ai-profiles-server pair` for another.");
+                missing(
+                    "the code has expired. Run `remote-control-conductor-server pair` for another.",
+                );
                 break;
             }
             thread::sleep(Duration::from_secs(1));
         }
     }
-    println!("\nDone. `ai-profiles-server doctor` checks all of this again at any time.");
+    println!(
+        "\nDone. `remote-control-conductor-server doctor` checks all of this again at any time."
+    );
     Ok(())
 }
 

@@ -12,7 +12,7 @@ type Props = {
 /**
  * Bottom row of the Settings pane.
  *
- * Left: mono `ai-profiles-remote v{version} · MIT · Not affiliated with Anthropic or OpenAI`,
+ * Left: mono `remote-control-conductor v{version} · MIT · Not affiliated with Anthropic or OpenAI`,
  * rendered as a button that opens the About dialog when clicked.
  * Right: ghost-styled "Reset onboarding flags →" button. Click opens a
  * confirmation dialog; confirming clears welcome/migration-dismissed/
@@ -55,10 +55,10 @@ export function SettingsFooterRow({ onOpenAbout }: Props) {
         <button
           type="button"
           onClick={onOpenAbout}
-          title="About ai-profiles-remote"
+          title="About Remote Control Conductor"
           className="cursor-pointer rounded-md px-2 py-1 font-mono text-[10.5px] text-muted-strong transition-colors duration-(--duration-snap) ease-(--ease-natural) hover:bg-cream-2 hover:text-ink dark:hover:bg-white/[0.04]"
         >
-          ai-profiles-remote {version ? `v${version}` : '…'} · MIT · Not affiliated with Anthropic or OpenAI
+          remote-control-conductor {version ? `v${version}` : '…'} · MIT · Not affiliated with Anthropic or OpenAI
         </button>
         <button
           type="button"

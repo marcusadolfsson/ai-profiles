@@ -31,7 +31,7 @@ export function AboutDialog({ open, onClose, onOpenWhatsNew }: Props) {
   return (
     <Dialog
       open={open}
-      title="About ai-profiles-remote"
+      title="About Remote Control Conductor"
       onClose={onClose}
       foot={
         <Button variant="primary" size="sm" trailingKbd={<Kbd variant="onOrange">⎋</Kbd>} onClick={onClose}>

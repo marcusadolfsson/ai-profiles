@@ -55,8 +55,8 @@ describe('RemoteHostsSection — setup guide', () => {
     const guide = (await screen.findByText('Run its setup')).closest('ol') as HTMLElement
     expect(within(guide).getAllByRole('listitem')).toHaveLength(4)
     const user = userEvent.setup()
-    await user.click(within(guide).getByRole('button', { name: 'Copy ai-profiles-server setup' }))
-    expect(copyToClipboard).toHaveBeenCalledWith('ai-profiles-server setup')
+    await user.click(within(guide).getByRole('button', { name: 'Copy remote-control-conductor-server setup' }))
+    expect(copyToClipboard).toHaveBeenCalledWith('remote-control-conductor-server setup')
     expect(within(guide).getByRole('button', { name: 'Copied' })).toBeInTheDocument()
   })
 

@@ -78,7 +78,7 @@ pub fn open_profile(id: &str) -> Result<(), String> {
     // Not a failure: the profile is open, just not through its wrapper. Worth
     // saying, because this is the only trace such a launch leaves anywhere.
     if let Some(bypass) = bypass {
-        eprintln!("ai-profiles: {bypass}");
+        eprintln!("remote-control-conductor: {bypass}");
     }
     Ok(())
 }

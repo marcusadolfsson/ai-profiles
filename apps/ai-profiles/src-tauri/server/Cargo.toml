@@ -1,13 +1,19 @@
 [package]
-name = "ai-profiles-server"
+name = "remote-control-conductor-server"
 version = "0.0.0"
-description = "Runs on a Linux machine and lets ai-profiles list its Claude accounts and sessions, and start or resume them in tmux with Remote Control."
+description = "Runs on a Linux machine and lets Remote Control Conductor list its Claude accounts and sessions, and start or resume them in tmux with Remote Control."
 license = "MIT"
 edition = "2021"
 publish = false
 
+# The library keeps its old name, so the app's tests and the server's own
+# modules import it as before.
+[lib]
+name = "ai_profiles_server"
+path = "src/lib.rs"
+
 [[bin]]
-name = "ai-profiles-server"
+name = "remote-control-conductor-server"
 path = "src/main.rs"
 
 [dependencies]

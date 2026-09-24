@@ -7,7 +7,7 @@ import { WelcomeDialog } from './welcome-dialog'
 describe('WelcomeDialog', () => {
   it('renders the welcome copy when open', () => {
     render(<WelcomeDialog open onContinue={vi.fn()} />)
-    expect(screen.getByText(/Welcome to ai-profiles/i)).toBeInTheDocument()
+    expect(screen.getByText(/Welcome to Remote Control Conductor/i)).toBeInTheDocument()
     expect(screen.getByText(/Claude and ChatGPT accounts/i)).toBeInTheDocument()
   })
 
@@ -20,6 +20,6 @@ describe('WelcomeDialog', () => {
 
   it('does not render when open=false', () => {
     render(<WelcomeDialog open={false} onContinue={vi.fn()} />)
-    expect(screen.queryByText(/Welcome to ai-profiles/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Welcome to Remote Control Conductor/i)).not.toBeInTheDocument()
   })
 })

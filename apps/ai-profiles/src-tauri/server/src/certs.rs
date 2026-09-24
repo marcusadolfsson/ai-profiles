@@ -30,9 +30,11 @@ impl Identity {
             fs::create_dir_all(&dir)?;
             fs::set_permissions(&dir, fs::Permissions::from_mode(0o700))?;
             let hostname = crate::hostinfo::hostname();
-            let made =
-                rcgen::generate_simple_self_signed(vec![hostname, "ai-profiles-server".into()])
-                    .map_err(|err| io::Error::other(format!("making a certificate: {err}")))?;
+            let made = rcgen::generate_simple_self_signed(vec![
+                hostname,
+                "remote-control-conductor-server".into(),
+            ])
+            .map_err(|err| io::Error::other(format!("making a certificate: {err}")))?;
             let staged_key = dir.join(".key.pem.tmp");
             fs::write(&staged_key, made.key_pair.serialize_pem())?;
             fs::set_permissions(&staged_key, fs::Permissions::from_mode(0o600))?;

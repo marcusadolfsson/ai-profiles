@@ -43,8 +43,8 @@ export function ProfileDetailInfo({ app, command }: Props) {
         </p>
         {command === undefined ? (
           <p>
-            This is your stock {spec.displayName} install — the one you had before ai-profiles. It keeps its own logins,
-            history, and chats, separate from any profile you create here.
+            This is your stock {spec.displayName} install — the one you had before Remote Control Conductor. It keeps
+            its own logins, history, and chats, separate from any profile you create here.
           </p>
         ) : (
           <p>

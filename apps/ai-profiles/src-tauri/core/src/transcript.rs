@@ -1,6 +1,6 @@
 //! Reading Claude Code transcripts: `<config>/projects/<project>/<id>.jsonl`.
 //!
-//! Shared by the ai-profiles app and ai-profiles-server, so it depends on
+//! Shared by the ai-profiles app and remote-control-conductor-server, so it depends on
 //! nothing but std and serde. Everything here reads Claude Code internals,
 //! which can change between versions.
 

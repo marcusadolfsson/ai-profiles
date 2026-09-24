@@ -255,7 +255,7 @@ async fn pair(
             return Err(ApiError {
                 status: StatusCode::UNAUTHORIZED,
                 code: "pairing_invalid",
-                message: "That pairing code isn't valid any more: it expired or was already used. Run `ai-profiles-server pair` on the server for a new one.".into(),
+                message: "That pairing code isn't valid any more: it expired or was already used. Run `remote-control-conductor-server pair` on the server for a new one.".into(),
             });
         };
         eprintln!("paired client {} ({}) from {ip}", client.name, client.id);
@@ -1129,7 +1129,7 @@ async fn rename_session(
             let Some(window) = window else {
                 return Err(ApiError::conflict(
                     "session_running_elsewhere",
-                    "It's running in a window ai-profiles didn't open. Rename it there with /rename, or in the Claude app.",
+                    "It's running in a window Remote Control Conductor didn't open. Rename it there with /rename, or in the Claude app.",
                 ));
             };
             let registry = account

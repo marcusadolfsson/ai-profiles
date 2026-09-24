@@ -1,4 +1,4 @@
-//! What the ai-profiles app and ai-profiles-server share: reading Claude
+//! What the ai-profiles app and remote-control-conductor-server share: reading Claude
 //! Code's files (transcripts, the account a config directory is signed in
 //! under, the registry of running sessions), moving and archiving sessions and
 //! merging project memory the way claudemulti does, running a program with a

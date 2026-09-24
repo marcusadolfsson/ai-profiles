@@ -1,4 +1,4 @@
-//! The client against a real ai-profiles-server, in-process on 127.0.0.1.
+//! The client against a real remote-control-conductor-server, in-process on 127.0.0.1.
 
 use std::fs;
 use std::path::Path;
@@ -56,7 +56,7 @@ fn write(path: &Path, text: &str) {
     fs::write(path, text).unwrap();
 }
 
-/// A real ai-profiles-server on 127.0.0.1, with one account, `work`, and
+/// A real remote-control-conductor-server on 127.0.0.1, with one account, `work`, and
 /// one session in it, "Refactor" in `/code`.
 pub(crate) async fn start_server() -> Server {
     let home = tempfile::tempdir().unwrap();

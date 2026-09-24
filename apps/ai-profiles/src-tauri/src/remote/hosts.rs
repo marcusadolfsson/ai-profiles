@@ -24,7 +24,7 @@ pub struct RemoteHost {
     /// SHA-256 of the server's certificate, lowercase hex: the only
     /// certificate this host is trusted with.
     pub fingerprint: String,
-    /// What the server calls this Mac, for `ai-profiles-server revoke`.
+    /// What the server calls this Mac, for `remote-control-conductor-server revoke`.
     pub client_id: String,
     pub paired_at: String,
     /// The address that last answered, tried first next time.

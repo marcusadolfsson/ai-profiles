@@ -107,16 +107,16 @@ jobs:
         with:
           projectPath: apps/ai-profiles
           tagName: ${{ inputs.tag || github.ref_name }}
-          releaseName: 'ai-profiles-remote ${{ inputs.tag || github.ref_name }}'
+          releaseName: 'Remote Control Conductor ${{ inputs.tag || github.ref_name }}'
           releaseBody: |
-            ai-profiles with sessions and remote hosts. See the [README](https://github.com/marcusadolfsson/ai-profiles-remote#readme).
+            Manage Claude Code for Remote Control, across several servers and accounts. See the [README](https://github.com/marcusadolfsson/remote-control-conductor#readme).
 
-            **Mac:** download the `.dmg`, open it, drag `ai-profiles-remote.app` to Applications. This build doesn't update itself; get the next one here.
+            **Mac:** download the `.dmg`, open it, drag `Remote Control Conductor.app` to Applications. This build doesn't update itself; get the next one here.
 
             **Linux host:** the server for x86_64 or arm64, then its setup:
             ```sh
-            mkdir -p ~/.local/bin && curl -fsSL https://github.com/marcusadolfsson/ai-profiles-remote/releases/latest/download/ai-profiles-server-$(uname -m)-linux -o ~/.local/bin/ai-profiles-server && chmod +x ~/.local/bin/ai-profiles-server
-            ai-profiles-server setup
+            mkdir -p ~/.local/bin && curl -fsSL https://github.com/marcusadolfsson/remote-control-conductor/releases/latest/download/remote-control-conductor-server-$(uname -m)-linux -o ~/.local/bin/remote-control-conductor-server && chmod +x ~/.local/bin/remote-control-conductor-server
+            remote-control-conductor-server setup
             ```
             Each server binary has a `.sha256` beside it.
           releaseDraft: true
@@ -154,19 +154,19 @@ jobs:
 
       - name: Build
         working-directory: apps/ai-profiles/src-tauri
-        run: cargo build --release --locked -p ai-profiles-server --target ${{ matrix.arch }}-unknown-linux-musl
+        run: cargo build --release --locked -p remote-control-conductor-server --target ${{ matrix.arch }}-unknown-linux-musl
 
       - name: Package
         run: |
-          out=ai-profiles-server-${{ matrix.arch }}-linux
-          cp apps/ai-profiles/src-tauri/target/${{ matrix.arch }}-unknown-linux-musl/release/ai-profiles-server "$out"
+          out=remote-control-conductor-server-${{ matrix.arch }}-linux
+          cp apps/ai-profiles/src-tauri/target/${{ matrix.arch }}-unknown-linux-musl/release/remote-control-conductor-server "$out"
           "./$out" --version
           sha256sum "$out" > "$out.sha256"
 
       - uses: actions/upload-artifact@v4
         with:
           name: server-${{ matrix.arch }}
-          path: ai-profiles-server-*
+          path: remote-control-conductor-server-*
 
   # Attach the servers to the release the app job drafted, then publish it:
   # never a release without all its files.
@@ -183,7 +183,7 @@ jobs:
           merge-multiple: true
 
       - name: Attach the servers
-        run: gh release upload "$TAG" ai-profiles-server-* --clobber --repo "$GITHUB_REPOSITORY"
+        run: gh release upload "$TAG" remote-control-conductor-server-* --clobber --repo "$GITHUB_REPOSITORY"
 
       - name: Publish release
         run: gh release edit "$TAG" --draft=false --repo "$GITHUB_REPOSITORY"

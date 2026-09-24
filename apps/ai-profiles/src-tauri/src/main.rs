@@ -11,18 +11,18 @@ fn main() {
         Invocation::Gui => ai_profiles_lib::run(),
         Invocation::OpenProfile(id) => {
             if let Err(message) = open_profile(id) {
-                eprintln!("ai-profiles: {message}");
+                eprintln!("remote-control-conductor: {message}");
                 std::process::exit(1);
             }
         }
         Invocation::Mcp => {
             if let Err(message) = ai_profiles_lib::mcp::serve() {
-                eprintln!("ai-profiles: {message}");
+                eprintln!("remote-control-conductor: {message}");
                 std::process::exit(1);
             }
         }
         Invocation::Misuse(message) => {
-            eprintln!("ai-profiles: {message}");
+            eprintln!("remote-control-conductor: {message}");
             std::process::exit(2);
         }
     }

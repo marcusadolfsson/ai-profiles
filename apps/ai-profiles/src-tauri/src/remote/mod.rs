@@ -1,4 +1,4 @@
-//! Remote hosts: Linux machines running ai-profiles-server, whose Claude
+//! Remote hosts: Linux machines running remote-control-conductor-server, whose Claude
 //! accounts and sessions the app shows next to the local profiles.
 //!
 //! The webview never talks to a host. Every call goes through here, so the
@@ -28,7 +28,7 @@ use self::secrets::SecretStore;
 use crate::error::{AppError, AppResult};
 
 /// What a pairing code says, shown before pairing so the user can compare the
-/// fingerprint with what `ai-profiles-server pair` printed.
+/// fingerprint with what `remote-control-conductor-server pair` printed.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PairingPreview {

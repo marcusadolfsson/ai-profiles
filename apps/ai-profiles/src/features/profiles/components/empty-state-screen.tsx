@@ -101,7 +101,7 @@ function ClaudeNotDetected({ onRefresh }: ClaudeNotDetectedProps) {
         Install Claude to begin.
       </h1>
       <p className="m-0 mb-6 max-w-[420px] text-[13.5px] leading-[1.55] tracking-[-0.003em] text-muted">
-        ai-profiles wraps the Claude and ChatGPT desktop apps and CLIs. Install Claude to get started.
+        Remote Control Conductor wraps the Claude and ChatGPT desktop apps and CLIs. Install Claude to get started.
       </p>
       <div className="mb-6 flex w-full max-w-[440px] flex-col gap-2.5 text-left">
         <div className="rounded-lg border border-border bg-white px-3.5 py-3 text-[12.5px] leading-[1.5] text-ink-soft dark:bg-cream-2">
