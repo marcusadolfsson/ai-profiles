@@ -1,4 +1,4 @@
-import type { NewRemoteSession, RemoteAccount, RemoteHost, RemoteTransferRequest } from '@/lib/types'
+import type { NewRemoteSession, RemoteAccount, RemoteHost, RemoteSession, RemoteTransferRequest } from '@/lib/types'
 
 import { useEffect, useRef } from 'react'
 
@@ -300,6 +300,37 @@ export type RemoteProfile = {
  * host, in the order each host lists its accounts. A host that hasn't
  * answered contributes none.
  */
+/** A session on a host with Remote Control connected. */
+export type RemoteControlSession = { host: RemoteHost; account: string; session: RemoteSession }
+
+/**
+ * The sessions with Remote Control connected, on every paired host, in the
+ * profiles signed in to `email`: what a desktop app signed in to that account
+ * can open. Empty without an email.
+ */
+export function useRemoteControlSessions(email: string | null): Array<RemoteControlSession> {
+  const hosts =
+    useQuery({ queryKey: queryKeys.remote.hosts, queryFn: remoteListHosts, enabled: email !== null }).data ?? []
+  const wanted = email?.toLowerCase() ?? null
+  const profiles = useRemoteProfiles(email === null ? [] : hosts).filter(
+    (profile) => wanted !== null && profile.account.account?.email?.toLowerCase() === wanted,
+  )
+  const results = useQueries({
+    queries: profiles.map((profile) => ({
+      queryKey: queryKeys.remote.sessions(profile.host.id, profile.account.name),
+      queryFn: () => remoteListSessions({ hostId: profile.host.id, account: profile.account.name }),
+      retry: 0,
+      refetchOnWindowFocus: 'always' as const,
+      refetchInterval: 15_000,
+    })),
+  })
+  return profiles.flatMap((profile, index) =>
+    (results[index]?.data ?? [])
+      .filter((session) => session.running && session.remoteControl && session.bridgeSessionId !== null)
+      .map((session) => ({ host: profile.host, account: profile.account.name, session })),
+  )
+}
+
 export function useRemoteProfiles(hosts: Array<RemoteHost>): Array<RemoteProfile> {
   const results = useQueries({
     queries: hosts.map((host) => ({

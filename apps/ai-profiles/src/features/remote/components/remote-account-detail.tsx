@@ -1565,7 +1565,7 @@ function RenameRemoteSessionDialog({
  * while Remote Control is connected, in its own blue, so it also says that
  * the session is in the Claude app.
  */
-function OpenInClaudeButton({ email, bridgeSessionId }: { email: string | null; bridgeSessionId: string }) {
+export function OpenInClaudeButton({ email, bridgeSessionId }: { email: string | null; bridgeSessionId: string }) {
   const toast = useToast()
   const [opening, setOpening] = useState(false)
   return (

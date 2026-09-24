@@ -4,6 +4,7 @@ import type { GuiLaunch } from './use-gui-launch'
 import { Suspense, useState } from 'react'
 
 import { PaneLayout } from '@/components/pane-layout'
+import { ProfileRemoteControl } from '@/features/remote/components/profile-remote-control'
 import { appSpecs } from '@/lib/app-registry'
 import { useAppState } from '@/lib/app-state/use-app-state'
 import { copyToClipboard, openDefaultGui, profilePaths } from '@/lib/commands'
@@ -88,6 +89,7 @@ export function DefaultProfileDetail({ entry, onMigrate }: Props) {
       </div>
 
       {entry.app === 'claude' ? <ProfileDetailSessions key={entry.id} profileId={entry.id} /> : null}
+      {entry.app === 'claude' ? <ProfileRemoteControl key={`rc-${entry.id}`} profileId={entry.id} /> : null}
 
       {actionError ? (
         <p role="alert" className="mb-4 text-meta text-red">

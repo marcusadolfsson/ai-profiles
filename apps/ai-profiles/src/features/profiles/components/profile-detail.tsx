@@ -6,6 +6,7 @@ import { Suspense, useState } from 'react'
 
 import { PaneLayout } from '@/components/pane-layout'
 import { useDependencies } from '@/features/dependencies/api/use-dependencies'
+import { ProfileRemoteControl } from '@/features/remote/components/profile-remote-control'
 import { appSpecs, wrapperCommand } from '@/lib/app-registry'
 
 import { useProfileLastUsed } from '../api/use-profile-last-used'
@@ -97,6 +98,7 @@ export function ProfileDetail({ profile, shortcutsEnabled, onEdit, onDelete }: P
       </div>
 
       {profile.app === 'claude' ? <ProfileDetailSessions key={profile.id} profileId={profile.id} /> : null}
+      {profile.app === 'claude' ? <ProfileRemoteControl key={`rc-${profile.id}`} profileId={profile.id} /> : null}
 
       {actionError ? (
         <p role="alert" className="mb-4 text-meta text-red">
