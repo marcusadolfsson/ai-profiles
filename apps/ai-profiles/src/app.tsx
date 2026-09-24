@@ -34,9 +34,10 @@ import { Sidebar } from '@/features/profiles/components/sidebar'
 import { SidebarSkeleton } from '@/features/profiles/components/sidebar-skeleton'
 import { useAdoptRemoteProfiles, useRemoteHosts, useRemoteProfiles } from '@/features/remote/api/use-remote'
 import { RemoteAccountDetail } from '@/features/remote/components/remote-account-detail'
+import { RemoteControlOverview, RemoteControlSidebarRow } from '@/features/remote/components/remote-control-overview'
 import { RemoteHostSection } from '@/features/remote/components/remote-host-section'
 import { SignInDialog } from '@/features/remote/components/sign-in-dialog'
-import { parseRemoteSelection, remoteSelectionId } from '@/features/remote/lib/remote-selection'
+import { parseRemoteSelection, REMOTE_CONTROL_ID, remoteSelectionId } from '@/features/remote/lib/remote-selection'
 import { SettingsView } from '@/features/settings/components/settings-view'
 import { SettingsViewSkeleton } from '@/features/settings/components/settings-view-skeleton'
 import { UpdateToastTrigger } from '@/features/updater/components/update-toast-trigger'
@@ -106,9 +107,13 @@ function AppContent() {
   const profiles = useProfiles()
   const entries = useSidebarEntries()
   const remoteHosts = useRemoteHosts()
-  // A remote account's id is a valid selection while its host is paired.
+  // A remote account's id is a valid selection while its host is paired, and
+  // the Remote Control entry while any host is.
   const isRemoteId = useCallback(
     (id: string) => {
+      if (id === REMOTE_CONTROL_ID) {
+        return remoteHosts.length > 0
+      }
       const remote = parseRemoteSelection(id)
       return remote !== null && remoteHosts.some((host) => host.id === remote.hostId)
     },
@@ -466,8 +471,18 @@ function AppContent() {
             onReorder={(ids) => {
               void profiles.reorder(ids)
             }}
-            renderExtraSections={(query) =>
-              remoteHosts.map((host) => (
+            renderExtraSections={(query) => [
+              remoteHosts.length > 0 && 'remote control'.includes(query.trim().toLowerCase()) ? (
+                <RemoteControlSidebarRow
+                  key={REMOTE_CONTROL_ID}
+                  selected={selection.selectedId === REMOTE_CONTROL_ID}
+                  onSelect={() => {
+                    selection.select(REMOTE_CONTROL_ID)
+                    setRightPane({ kind: 'profile' })
+                  }}
+                />
+              ) : null,
+              ...remoteHosts.map((host) => (
                 <RemoteHostSection
                   key={host.id}
                   host={host}
@@ -479,8 +494,8 @@ function AppContent() {
                     setRightPane({ kind: 'profile' })
                   }}
                 />
-              ))
-            }
+              )),
+            ]}
           />
           {/* Activity keeps the off-screen pane mounted so toggling gear ↔ profile
               never re-fetches dependencies/backups or re-runs profile-detail effects.
@@ -517,6 +532,15 @@ function AppContent() {
                   account={remoteSelected.account}
                   onRenamed={(name) => selection.select(remoteSelectionId(remoteSelected.hostId, name))}
                 />
+              </QueryErrorBoundary>
+            ) : null}
+          </Activity>
+          <Activity
+            mode={rightPane.kind === 'profile' && selection.selectedId === REMOTE_CONTROL_ID ? 'visible' : 'hidden'}
+          >
+            {selection.selectedId === REMOTE_CONTROL_ID ? (
+              <QueryErrorBoundary>
+                <RemoteControlOverview onSelectProfile={(id) => selection.select(id)} />
               </QueryErrorBoundary>
             ) : null}
           </Activity>

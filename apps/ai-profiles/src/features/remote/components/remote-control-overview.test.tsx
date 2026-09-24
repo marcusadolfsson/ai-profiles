@@ -1,30 +1,22 @@
 import type { RemoteAccount, RemoteHost, RemoteSession } from '@/lib/types'
 
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ToastProvider } from '@/design'
-import {
-  profileAccount,
-  remoteListAccounts,
-  remoteListHosts,
-  remoteListSessions,
-  remoteOpenInClaude,
-} from '@/lib/commands'
+import { remoteListAccounts, remoteListHosts, remoteListSessions } from '@/lib/commands'
 import { renderWithQuery } from '@/test/render-with-query'
 
-import { ProfileRemoteControl } from './profile-remote-control'
+import { RemoteControlOverview, RemoteControlSidebarRow } from './remote-control-overview'
 
 vi.mock('@/lib/commands', async () => {
   const actual = await vi.importActual<typeof import('@/lib/commands')>('@/lib/commands')
   return {
     ...actual,
-    profileAccount: vi.fn(),
     remoteListHosts: vi.fn(),
     remoteListAccounts: vi.fn(),
     remoteListSessions: vi.fn(),
-    remoteOpenInClaude: vi.fn(async () => ({ app: 'Claude (Marcus2)', web: null, note: null })),
   }
 })
 
@@ -93,41 +85,30 @@ beforeEach(() => {
   })
 })
 
-function renderIt() {
-  renderWithQuery(
-    <ToastProvider>
-      <ProfileRemoteControl profileId="p2" />
-    </ToastProvider>,
-  )
-}
-
-describe('ProfileRemoteControl', () => {
-  it("lists the Remote Control sessions on every host whose profile is on this profile's account", async () => {
-    vi.mocked(profileAccount).mockResolvedValue({
-      status: 'signedIn',
-      account: { email: 'marcus2@example.com', name: 'Marcus', organization: null, plan: 'Max' },
-    })
-    renderIt()
-    expect(await screen.findByText('Remote Control on marcus2@example.com')).toBeInTheDocument()
-    expect(await screen.findByText('Brain')).toBeInTheDocument()
-    expect(await screen.findByText('CRM')).toBeInTheDocument()
-    expect(screen.getByText('xjopa1/brain')).toBeInTheDocument()
-    expect(screen.getByText('ONE/crm')).toBeInTheDocument()
-    // Another account's session, one without Remote Control, and one that isn't running aren't listed.
-    expect(screen.queryByText('FOAWA')).toBeNull()
+describe('RemoteControlOverview', () => {
+  it('lists every connected session on every host, by account, a click from its profile', async () => {
+    const onSelectProfile = vi.fn()
+    renderWithQuery(
+      <ToastProvider>
+        <RemoteControlOverview onSelectProfile={onSelectProfile} />
+      </ToastProvider>,
+    )
+    const marcus2 = await screen.findByRole('region', { name: 'marcus2@example.com' })
+    expect(await within(marcus2).findByText('Brain')).toBeInTheDocument()
+    expect(await within(marcus2).findByText('CRM')).toBeInTheDocument()
+    const marcus1 = await screen.findByRole('region', { name: 'marcus1@example.com' })
+    expect(await within(marcus1).findByText('FOAWA')).toBeInTheDocument()
+    // Only what has Remote Control connected.
     expect(screen.queryByText('No RC')).toBeNull()
     expect(screen.queryByText('Old')).toBeNull()
-    expect(screen.getAllByRole('button', { name: 'Open in Claude' })).toHaveLength(2)
-    // In this desktop profile, not whichever comes first with the same account.
-    await userEvent.setup().click(screen.getAllByRole('button', { name: 'Open in Claude' })[0])
-    expect(remoteOpenInClaude).toHaveBeenCalledWith(expect.objectContaining({ profileId: 'p2' }))
+    expect(screen.getAllByRole('button', { name: 'Open in Claude' })).toHaveLength(3)
+
+    await userEvent.setup().click(within(marcus2).getByRole('button', { name: 'ONE/crm' }))
+    expect(onSelectProfile).toHaveBeenCalledWith('remote:h2:crm')
   })
 
-  it('shows nothing for a profile that is signed out', async () => {
-    vi.mocked(profileAccount).mockResolvedValue({ status: 'signedOut' })
-    renderIt()
-    await new Promise((resolve) => setTimeout(resolve, 50))
-    expect(screen.queryByText(/Remote Control on/)).toBeNull()
-    expect(remoteListHosts).not.toHaveBeenCalled()
+  it('counts them in the sidebar', async () => {
+    renderWithQuery(<RemoteControlSidebarRow selected={false} onSelect={vi.fn()} />)
+    expect(await screen.findByTitle('3 connected')).toHaveTextContent('3')
   })
 })

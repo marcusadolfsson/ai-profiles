@@ -704,12 +704,14 @@ pub async fn remote_delete_account(host_id: String, account: String) -> AppResul
 pub async fn remote_open_in_claude(
     email: Option<String>,
     bridge_session_id: String,
+    profile_id: Option<String>,
 ) -> AppResult<remote::open_in_claude::Opened> {
     tokio::task::spawn_blocking(move || {
         remote::open_in_claude::open_in_claude(
             email.as_deref(),
             &bridge_session_id,
             env!("CARGO_PKG_VERSION"),
+            profile_id.as_deref(),
         )
     })
     .await

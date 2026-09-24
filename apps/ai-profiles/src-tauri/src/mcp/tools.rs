@@ -1032,7 +1032,7 @@ async fn open_session_in_claude(reference: &str, session: &str) -> Outcome {
         .and_then(|signed_in| signed_in.email);
     let (_, web) = open_in_claude::links(&bridge).map_err(why)?;
     let opened = blocking(move || {
-        open_in_claude::open_in_claude(email.as_deref(), &bridge, env!("CARGO_PKG_VERSION"))
+        open_in_claude::open_in_claude(email.as_deref(), &bridge, env!("CARGO_PKG_VERSION"), None)
     })
     .await?;
     Ok(

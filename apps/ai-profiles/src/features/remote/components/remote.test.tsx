@@ -235,9 +235,10 @@ describe('RemoteAccountDetail', () => {
     expect(within(runningList).getByText('Brain-Dev-Server')).toBeInTheDocument()
     const previousList = screen.getByRole('list', { name: 'Previous sessions' })
     expect(within(previousList).getByText('fix the tests')).toBeInTheDocument()
-    // Last, so it lines up with Stop in the running rows.
+    // Second to last, before the row's menu, so it lines up with Stop in the running rows.
     const previousButtons = within(previousList).getAllByRole('button')
-    expect(previousButtons[previousButtons.length - 1]).toHaveAccessibleName('Resume')
+    expect(previousButtons[previousButtons.length - 2]).toHaveAccessibleName('Resume')
+    expect(previousButtons[previousButtons.length - 1]).toHaveAccessibleName('More for this session')
     expect(within(runningList).queryByRole('button', { name: /Resume/ })).toBeNull()
 
     // Only the running session has a window to open. Terminal opens it, and
@@ -477,7 +478,8 @@ describe('RemoteAccountDetail', () => {
       </ToastProvider>,
     )
     const user = userEvent.setup()
-    await user.click((await screen.findAllByRole('button', { name: 'Move to another profile' }))[0])
+    await user.click((await screen.findAllByRole('button', { name: 'More for this session' }))[0])
+    await user.click(await screen.findByText('Move to another profile…'))
     const dialog = await screen.findByRole('dialog', { name: 'Move to another profile' })
     expect(await within(dialog).findByText(/1 to copy, 1 to replace/)).toBeInTheDocument()
     const decision = within(dialog).getByText('memory/rules.md')
@@ -566,7 +568,8 @@ describe('RemoteAccountDetail', () => {
       </ToastProvider>,
     )
     const user = userEvent.setup()
-    await user.click((await screen.findAllByRole('button', { name: 'Move to another profile' }))[0])
+    await user.click((await screen.findAllByRole('button', { name: 'More for this session' }))[0])
+    await user.click(await screen.findByText('Move to another profile…'))
     const dialog = await screen.findByRole('dialog', { name: 'Move to another profile' })
     const choice = within(dialog).getByRole('group', { name: /The session on marcus2/ })
     // Archiving stays the default: it can be undone, and says what it keeps.
@@ -637,7 +640,8 @@ describe('RemoteAccountDetail', () => {
       </ToastProvider>,
     )
     const user = userEvent.setup()
-    await user.click(await screen.findByRole('button', { name: 'Move to another profile' }))
+    await user.click(await screen.findByRole('button', { name: 'More for this session' }))
+    await user.click(await screen.findByText('Move to another profile…'))
     const dialog = await screen.findByRole('dialog', { name: 'Move to another profile' })
     await within(dialog).findByText(/1 to copy/)
     await user.click(within(dialog).getByRole('button', { name: /^Move/ }))
@@ -1152,7 +1156,8 @@ describe('renaming a session', () => {
       </ToastProvider>,
     )
     const user = userEvent.setup()
-    await user.click((await screen.findAllByRole('button', { name: 'Rename' }))[0])
+    await user.click((await screen.findAllByRole('button', { name: 'More for this session' }))[0])
+    await user.click(await screen.findByText('Rename…'))
     const dialog = await screen.findByRole('dialog', { name: 'Rename session' })
     const input = within(dialog).getByLabelText('Name')
     // An automatic title isn't a name yet: the field starts empty.

@@ -12,14 +12,12 @@ import { useState } from 'react'
 import {
   Archive,
   ArchiveRestore,
-  ArrowRightLeft,
   Copy,
   Laptop,
   LoaderCircle,
   LogIn,
   MessageSquareReply,
   MoreHorizontal,
-  Pencil,
   Play,
   Plus,
   RotateCw,
@@ -1369,28 +1367,6 @@ function RemoteSessionRow({
             <Button
               variant="ghost"
               size="sm"
-              aria-label="Rename"
-              title="Rename: here, in the Claude app and on the host"
-              disabled={disabled}
-              className={rowActionClasses}
-              onClick={onRename}
-            >
-              <Pencil aria-hidden className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              aria-label="Move to another profile"
-              title="Move to another profile"
-              disabled={disabled}
-              className={rowActionClasses}
-              onClick={onMove}
-            >
-              <ArrowRightLeft aria-hidden className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
               aria-label="Restart"
               title={
                 session.updatePending
@@ -1406,31 +1382,10 @@ function RemoteSessionRow({
               <RotateCw aria-hidden className={cn('h-3.5 w-3.5', busy === 'restart' && 'animate-spin')} />
             </Button>
             <StopButton stopping={busy === 'stop'} disabled={disabled} onStop={onStop} />
+            <SessionMenu disabled={disabled} onRename={onRename} onMove={onMove} />
           </>
         ) : (
           <>
-            <Button
-              variant="ghost"
-              size="sm"
-              aria-label="Rename"
-              title="Rename: here, in the Claude app and on the host"
-              disabled={disabled}
-              className={rowActionClasses}
-              onClick={onRename}
-            >
-              <Pencil aria-hidden className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              aria-label="Move to another profile"
-              title="Move to another profile"
-              disabled={disabled}
-              className={rowActionClasses}
-              onClick={onMove}
-            >
-              <ArrowRightLeft aria-hidden className="h-3.5 w-3.5" />
-            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -1458,10 +1413,43 @@ function RemoteSessionRow({
                 <Play aria-hidden className="h-3.5 w-3.5" />
               )}
             </Button>
+            <SessionMenu disabled={disabled} onRename={onRename} onMove={onMove} />
           </>
         )
       }
     />
+  )
+}
+
+/**
+ * A session's rarer actions. Renaming, and moving it to another profile: on a
+ * host, switching the profile's account is the usual way to go on under
+ * another account, so moving isn't a button of its own.
+ */
+function SessionMenu({ disabled, onRename, onMove }: { disabled: boolean; onRename: () => void; onMove: () => void }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label="More for this session"
+          title="Rename, or move to another profile"
+          disabled={disabled}
+          className={rowActionClasses}
+        >
+          <MoreHorizontal aria-hidden className="h-3.5 w-3.5" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuItem className="px-2 py-1.5 text-[12px]" onSelect={onRename}>
+          Rename…
+        </DropdownMenuItem>
+        <DropdownMenuItem className="px-2 py-1.5 text-[12px]" onSelect={onMove}>
+          Move to another profile…
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 
@@ -1565,7 +1553,16 @@ function RenameRemoteSessionDialog({
  * while Remote Control is connected, in its own blue, so it also says that
  * the session is in the Claude app.
  */
-export function OpenInClaudeButton({ email, bridgeSessionId }: { email: string | null; bridgeSessionId: string }) {
+export function OpenInClaudeButton({
+  email,
+  bridgeSessionId,
+  profileId,
+}: {
+  email: string | null
+  bridgeSessionId: string
+  /** Open it in this desktop profile, when it's signed in as `email`. */
+  profileId?: string
+}) {
   const toast = useToast()
   const [opening, setOpening] = useState(false)
   return (
@@ -1579,7 +1576,7 @@ export function OpenInClaudeButton({ email, bridgeSessionId }: { email: string |
       onClick={async () => {
         setOpening(true)
         try {
-          const opened = await remoteOpenInClaude({ email, bridgeSessionId })
+          const opened = await remoteOpenInClaude({ email, bridgeSessionId, profileId })
           if (opened.app) {
             toast.success(`Opened in ${opened.app}`)
           } else {

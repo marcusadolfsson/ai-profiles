@@ -37,7 +37,13 @@ export function ProfileRemoteControl({ profileId }: { profileId: string }) {
               folder={session.cwd}
               home={undefined}
               at={session.updatedAt}
-              actions={<OpenInClaudeButton email={email} bridgeSessionId={session.bridgeSessionId ?? ''} />}
+              actions={
+                <OpenInClaudeButton
+                  email={email}
+                  bridgeSessionId={session.bridgeSessionId ?? ''}
+                  profileId={profileId}
+                />
+              }
             />
           ))}
         </ul>

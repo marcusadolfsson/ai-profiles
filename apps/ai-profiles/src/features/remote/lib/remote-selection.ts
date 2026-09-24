@@ -8,6 +8,9 @@
  */
 const prefix = 'remote:'
 
+/** The sidebar's Remote Control entry: every connected session, on every host. */
+export const REMOTE_CONTROL_ID = 'remote-control'
+
 export type RemoteSelection = {
   hostId: string
   account: string

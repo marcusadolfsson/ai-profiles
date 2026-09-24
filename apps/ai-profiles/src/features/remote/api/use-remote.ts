@@ -300,21 +300,25 @@ export type RemoteProfile = {
  * host, in the order each host lists its accounts. A host that hasn't
  * answered contributes none.
  */
-/** A session on a host with Remote Control connected. */
-export type RemoteControlSession = { host: RemoteHost; account: string; session: RemoteSession }
+/** A session on a host with Remote Control connected, and whose account it's on. */
+export type RemoteControlSession = {
+  host: RemoteHost
+  account: string
+  email: string | null
+  session: RemoteSession
+}
 
 /**
  * The sessions with Remote Control connected, on every paired host, in the
- * profiles signed in to `email`: what a desktop app signed in to that account
- * can open. Empty without an email.
+ * profiles `keep` accepts (all of them without it). Nothing while not
+ * `enabled`.
  */
-export function useRemoteControlSessions(email: string | null): Array<RemoteControlSession> {
-  const hosts =
-    useQuery({ queryKey: queryKeys.remote.hosts, queryFn: remoteListHosts, enabled: email !== null }).data ?? []
-  const wanted = email?.toLowerCase() ?? null
-  const profiles = useRemoteProfiles(email === null ? [] : hosts).filter(
-    (profile) => wanted !== null && profile.account.account?.email?.toLowerCase() === wanted,
-  )
+export function useAllRemoteControlSessions(
+  enabled = true,
+  keep: (profile: RemoteProfile) => boolean = () => true,
+): Array<RemoteControlSession> {
+  const hosts = useQuery({ queryKey: queryKeys.remote.hosts, queryFn: remoteListHosts, enabled }).data ?? []
+  const profiles = useRemoteProfiles(enabled ? hosts : []).filter(keep)
   const results = useQueries({
     queries: profiles.map((profile) => ({
       queryKey: queryKeys.remote.sessions(profile.host.id, profile.account.name),
@@ -327,7 +331,24 @@ export function useRemoteControlSessions(email: string | null): Array<RemoteCont
   return profiles.flatMap((profile, index) =>
     (results[index]?.data ?? [])
       .filter((session) => session.running && session.remoteControl && session.bridgeSessionId !== null)
-      .map((session) => ({ host: profile.host, account: profile.account.name, session })),
+      .map((session) => ({
+        host: profile.host,
+        account: profile.account.name,
+        email: profile.account.account?.email ?? null,
+        session,
+      })),
+  )
+}
+
+/**
+ * The connected sessions in the profiles signed in to `email`: what a desktop
+ * app signed in to that account can open. Empty without an email.
+ */
+export function useRemoteControlSessions(email: string | null): Array<RemoteControlSession> {
+  const wanted = email?.toLowerCase() ?? null
+  return useAllRemoteControlSessions(
+    email !== null,
+    (profile) => wanted !== null && profile.account.account?.email?.toLowerCase() === wanted,
   )
 }
 

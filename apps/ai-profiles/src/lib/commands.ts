@@ -394,7 +394,12 @@ export type OpenedInClaude = {
  * Open a remote session's Remote Control view in the Claude app on this Mac
  * signed in as `email`, starting it if needed; on claude.ai otherwise.
  */
-export function remoteOpenInClaude(input: { email: string | null; bridgeSessionId: string }): Promise<OpenedInClaude> {
+export function remoteOpenInClaude(input: {
+  email: string | null
+  bridgeSessionId: string
+  /** The desktop profile asked from: used when it's signed in as `email` too. */
+  profileId?: string
+}): Promise<OpenedInClaude> {
   return invoke<OpenedInClaude>('remote_open_in_claude', input)
 }
 

@@ -124,15 +124,26 @@ enum Match {
     Default,
 }
 
-/// The Claude app signed in with `email`: a profile with a desktop app, else
-/// the stock one.
-fn matching(email: &str) -> AppResult<Option<Match>> {
+/// The Claude app signed in with `email`: `prefer` (a profile id, or
+/// `default:claude`) when it's signed in with that email, else the first
+/// profile with a desktop app that is, else the stock one.
+fn matching(email: &str, prefer: Option<&str>) -> AppResult<Option<Match>> {
     let same = |id: &str| match crate::accounts::read(id) {
         Ok(crate::accounts::AccountStatus::SignedIn { account }) => account
             .email
             .is_some_and(|found| found.eq_ignore_ascii_case(email)),
         _ => false,
     };
+    if let Some(preferred) = prefer.filter(|id| same(id)) {
+        if preferred == "default:claude" {
+            return Ok(Some(Match::Default));
+        }
+        if let Some(profile) = profiles::load()?.into_iter().find(|profile| {
+            profile.id == preferred && profile.app == AppKind::Claude && profile.surfaces.gui
+        }) {
+            return Ok(Some(Match::Profile(Box::new(profile))));
+        }
+    }
     for profile in profiles::load()? {
         if profile.app == AppKind::Claude && profile.surfaces.gui && same(&profile.id) {
             return Ok(Some(Match::Profile(Box::new(profile))));
@@ -144,8 +155,15 @@ fn matching(email: &str) -> AppResult<Option<Match>> {
 /// Open the remote session with Remote Control id `bridge` in the Claude app
 /// signed in as `email`, starting that profile first if it isn't running; on
 /// claude.ai when there's no such app, or it can't be told apart from others.
-/// `version` is this app's, for starting a profile.
-pub fn open_in_claude(email: Option<&str>, bridge: &str, version: &str) -> AppResult<Opened> {
+/// `prefer` is the profile asked from, used when it's signed in as `email`
+/// too: several desktop apps can share an account. `version` is this app's,
+/// for starting a profile.
+pub fn open_in_claude(
+    email: Option<&str>,
+    bridge: &str,
+    version: &str,
+    prefer: Option<&str>,
+) -> AppResult<Opened> {
     let (app_link, web_link) = links(bridge)?;
     let web = |note: Option<String>| -> AppResult<Opened> {
         open(None, &web_link)?;
@@ -155,7 +173,11 @@ pub fn open_in_claude(email: Option<&str>, bridge: &str, version: &str) -> AppRe
             note,
         })
     };
-    let Some(found) = email.map(matching).transpose()?.flatten() else {
+    let Some(found) = email
+        .map(|email| matching(email, prefer))
+        .transpose()?
+        .flatten()
+    else {
         return web(None);
     };
     let exec = AppKind::Claude.spec().gui_bundle_candidates[0].macos_exec;
