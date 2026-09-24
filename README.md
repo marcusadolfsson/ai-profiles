@@ -5,9 +5,9 @@
 <h1 align="center">Remote Control Conductor</h1>
 
 <p align="center">
-  <b>Manage Claude Code CLI for Remote Control, across several servers and accounts.</b><br>
-  One Mac app to sign in, start, stop, restart and move Claude Code sessions on your Linux machines,<br>
-  and to keep several Claude Desktop profiles side by side. With a built-in MCP server, Claude can do it for you.
+  <b>Run Claude Code CLI on your servers, with Remote Control, across several accounts.</b><br>
+  One Mac app and a small Linux server: sign in, start, stop, restart and switch accounts<br>
+  for Claude Code sessions on every server. With a built-in MCP server, Claude can do it for you.
 </p>
 
 <p align="center">
@@ -24,16 +24,20 @@
   <img alt="A project on a Linux host, FOAWA on xjopa1: its running and previous sessions" src="docs/screenshots/remote-profile.png" width="860">
 </p>
 
-Remote Control lets you work with Claude Code from the Claude app on your phone, another Mac or the web.
-But the session still has to run somewhere, and someone has to start it, keep it alive, restart it
-when Claude updates, and decide which account it runs under. **Remote Control Conductor does that job, for every
-server and every account, from your Mac.** And because it's also an MCP server, you can just ask Claude:
+Remote Control lets you work with a Claude Code CLI session from the Claude app on your phone, your Mac or
+the web. On a server, though, that session still has to run somewhere, and someone has to start it, keep
+it alive, restart it when Claude updates, and decide which account it runs under. **Remote Control
+Conductor does that job for Claude Code on your servers, from your Mac,** with a small server on each Linux
+machine.
+
+(Between Claude Desktop installs, Remote Control already works well as it is. This is for the CLI on
+servers.) And because it's also an MCP server, you can just ask Claude:
 *"restart the claudemulti session on xjopa1"*.
 
 ## How to set it up: accounts and projects
 
-- **Add each of your Claude accounts once, as a desktop profile.** One per login, each with its own Claude
-  desktop app on your Mac.
+- **Add each of your Claude accounts once, as a desktop profile on your Mac.** One per login, each with
+  its own Claude app. That's where a server session on that account opens when you click Open in Claude.
 - **Group each project's sessions into its own profile on a host.** A profile on a server is a Claude Code
   config folder with its own sign-in, sessions and memory: `brain`, `foawa`, `home-assistant`. Projects can
   use the same account or different ones.
@@ -91,8 +95,7 @@ browser signs you in to the same account again, the app notices and says so.
 </p>
 
 ### 🔀 Move sessions between profiles
-To split a project up, move a session to another profile, on the same server or between profiles on
-your Mac. Everything goes with it: the transcript, subagents, file history, todos and plans. Claude Code
+To split a project up, move a session to another profile on the same server. Everything goes with it: the transcript, subagents, file history, todos and plans. Claude Code
 doesn't officially support moving sessions, so this works with its files as they're laid out today, with
 backups and checks along the way.
 
@@ -138,11 +141,10 @@ this Mac, desktop app and Claude Code both. Or add it by hand:
 claude mcp add --scope user remote-control-conductor -- '/Applications/Remote Control Conductor.app/Contents/MacOS/remote-control-conductor' mcp
 ```
 
-### 🧑‍🤝‍🧑 Multiple profiles for Claude Desktop
-It's still [ai-profiles](https://github.com/bartekczyz/ai-profiles) underneath. Run several Claude Desktop
-(and ChatGPT) accounts side by side, each with its own launcher tinted in its color, its own CLI wrapper
-and its own usage meters. Each Claude profile keeps its own Claude Code sessions and settings. A
-**Sessions** panel lists them and moves them between profiles.
+### 🧑‍🤝‍🧑 One desktop profile per account
+It's [ai-profiles](https://github.com/bartekczyz/ai-profiles) underneath, so each of your Claude accounts
+gets its own Claude app on your Mac, with its own launcher, color and usage meters. Each one lists the
+Remote Control sessions running on its account on your servers, ready to open.
 
 ## Requirements
 
@@ -205,7 +207,7 @@ between accounts:
 
 What Remote Control Conductor adds:
 
-1. **One place for accounts and their sessions,** on the Mac and on your servers, side by side.
+1. **One place for Claude Code on your servers,** every server, project and account in one sidebar.
 2. **Switching a project's account** when one runs out, sessions and all, and moving sessions between
    profiles, memory and all.
 3. **Remote Control, not another client.** You work in the official Claude apps. This app starts, stops,
@@ -213,7 +215,7 @@ What Remote Control Conductor adds:
 4. **Built for a Linux host:** a small server with pinned TLS that brings sessions back after a reboot,
    and accounts that sign in through your Mac's browser.
 5. **Claude can run it.** The app is an MCP server too, so Claude Desktop and Claude Code can list,
-   start, restart, read, archive and move your sessions, on this Mac and on every host, when you ask.
+   start, restart, read, archive, move and switch your sessions on every server, when you ask.
 
 ## Security
 
