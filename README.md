@@ -21,7 +21,7 @@ terminal ([remote hosts](#remote-hosts)).
 
 From [Releases](https://github.com/marcusadolfsson/ai-profiles-remote/releases/latest):
 
-- **Mac:** the `.dmg`, a universal build that's signed and notarized. Open it and drag `ai-profiles.app` to
+- **Mac:** the `.dmg`, a universal build that's signed and notarized. Open it and drag `ai-profiles-remote.app` to
   Applications. It doesn't update itself (the updater would fetch upstream's build); take the next one from
   Releases.
 - **Linux host:** the server, for x86_64 or arm64, statically linked. Then run its setup:

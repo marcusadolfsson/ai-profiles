@@ -69,11 +69,16 @@ pub fn run() {
             // About panel for a frontend-driven dialog. Everything else here
             // mirrors what Tauri would auto-generate (Services, Hide,
             // Hide Others, Show All, Quit) so the menu stays familiar.
-            let about =
-                MenuItem::with_id(app, OPEN_ABOUT_ID, "About ai-profiles", true, None::<&str>)?;
+            let about = MenuItem::with_id(
+                app,
+                OPEN_ABOUT_ID,
+                "About ai-profiles-remote",
+                true,
+                None::<&str>,
+            )?;
             let app_submenu = Submenu::with_items(
                 app,
-                "ai-profiles",
+                "ai-profiles-remote",
                 true,
                 &[
                     &about,

@@ -111,7 +111,7 @@ jobs:
           releaseBody: |
             ai-profiles with sessions and remote hosts. See the [README](https://github.com/marcusadolfsson/ai-profiles-remote#readme).
 
-            **Mac:** download the `.dmg`, open it, drag `ai-profiles.app` to Applications. This build doesn't update itself; get the next one here.
+            **Mac:** download the `.dmg`, open it, drag `ai-profiles-remote.app` to Applications. This build doesn't update itself; get the next one here.
 
             **Linux host:** the server for x86_64 or arm64, then its setup:
             ```sh

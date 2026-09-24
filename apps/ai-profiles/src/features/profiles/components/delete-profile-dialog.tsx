@@ -46,7 +46,7 @@ export function DeleteProfileDialog({ open, profile, onClose, onConfirm }: Props
       <div className="space-y-3">
         <p className="text-body text-ink-soft">This will remove:</p>
         <ul className="space-y-1 pl-5 text-body text-muted">
-          <li className="list-disc">The profile entry from ai-profiles</li>
+          <li className="list-disc">The profile entry from ai-profiles-remote</li>
           {profile.surfaces.gui ? (
             <li className="list-disc">
               <code className="font-mono text-mono">

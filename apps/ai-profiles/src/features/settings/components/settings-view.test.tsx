@@ -110,7 +110,7 @@ describe('SettingsView', () => {
   it('renders the app version in the footer row', async () => {
     primeInitialLoads()
     renderSettings(<SettingsView onClose={vi.fn()} onOpenMigration={vi.fn()} onOpenAbout={vi.fn()} />)
-    expect(await screen.findByText(/ai-profiles v0\.1\.0/)).toBeInTheDocument()
+    expect(await screen.findByText(/ai-profiles-remote v0\.1\.0/)).toBeInTheDocument()
   })
 
   it('renders the System status card with one row per dependency', async () => {
