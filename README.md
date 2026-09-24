@@ -43,7 +43,7 @@ What this adds:
 1. **One place for accounts and their sessions,** on the Mac and on a server, side by side in the same sidebar.
 2. **Moving a session between accounts,** with its transcript, subagents and file history, project memory merged (you decide what both sides changed), the desktop app's own session list, and archive and restore.
 3. **Remote Control, not another client.** Sessions on the server start with Claude's own Remote Control on, so you work with them in the official Claude apps on your phone, another Mac or the web. ai-profiles starts, stops, restarts, renames and moves them, and shows their window when one needs an answer.
-4. **Built for a Linux host:** a small server with pinned TLS, reachable over Tailscale or WireGuard, running as a systemd service that brings sessions back after a reboot.
+4. **Built for a Linux host:** a small server with pinned TLS, reachable over Tailscale or WireGuard, running as a systemd service that brings sessions back after a reboot. Accounts on it sign in through your Mac's browser, never through a terminal on the server.
 
 ## The changes
 
@@ -157,6 +157,7 @@ From the Mac:
 
 - **Start, resume, stop and restart** sessions, and rename them. The name follows the session to Remote
   Control and tmux; a session with no name is named after its folder.
+- **Sign in from your Mac, in your Mac's browser.** Adding an account on the host opens Claude's own sign-in page (OAuth) in your browser here: sign in as you always do, and paste the code it shows into ai-profiles. No ssh session, no browser on the server, no copying links out of a headless terminal. Accounts can also be signed out, renamed, given a color and ⌘-number, or deleted (to `.trash`).
 - **See and answer a session's window** inside ai-profiles when it's waiting on a question, or attach in
   Terminal over ssh.
 - **Move a session to another account** on the host. Everything under the session's id goes and anything
@@ -169,8 +170,6 @@ From the Mac:
   - Moves between profiles on this Mac now work the same way.
 - **Archive, restore and delete archives.** Archives are compressed, here and on this Mac: a 300 MB
   transcript keeps in about 100.
-- **Add an account and sign it in** from the Mac. You can also sign it out, rename it, give it a color and
-  ⌘-number, or delete it (it goes to `.trash`).
 - **Open a Remote Control session** in the Claude app of the matching profile on this Mac.
 
 <table>
