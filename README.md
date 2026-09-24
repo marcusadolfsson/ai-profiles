@@ -185,13 +185,6 @@ Later, `remote-control-conductor-server doctor` checks an install, `pair` makes 
 The server is a single static binary. You can also build it from source with
 `cargo install --locked --git https://github.com/marcusadolfsson/remote-control-conductor remote-control-conductor-server`.
 
-**Coming from ai-profiles-remote?** Install the new app and delete `ai-profiles-remote.app`: your profiles,
-paired hosts and settings carry over. On each host, fetch the server with the command above and run
-`remote-control-conductor-server install-service`. It stops the old `ai-profiles-server` service, moves its
-settings and certificate to their new folders (so your Mac stays paired), and starts the new one; running
-sessions aren't touched. Then `rm ~/.local/bin/ai-profiles-server`. In the app, **Settings → MCP server → Add
-to my Claude profiles** replaces the old `ai-profiles` MCP entry with `remote-control-conductor`.
-
 The app doesn't update itself. The upstream updater would replace it with a build that doesn't have these
 features, so it's switched off. Take new versions from Releases.
 
