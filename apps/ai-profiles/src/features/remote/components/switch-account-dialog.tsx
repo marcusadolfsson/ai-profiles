@@ -22,8 +22,8 @@ function sessions(count: number): string {
 }
 
 /**
- * Switching a profile to another Claude account, the way to go on when its
- * account runs out: its running sessions stop, it signs out, and it signs in
+ * Switching a profile to another Claude account, say from personal to work:
+ * its running sessions stop, it signs out, and it signs in
  * as the other account in the browser. The host then resumes the same
  * sessions under it. Nothing moves, and no other profile is touched.
  */

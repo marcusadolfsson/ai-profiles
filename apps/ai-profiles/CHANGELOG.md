@@ -4,7 +4,7 @@
 
 ### Added
 
-* **remote:** Switch account on a profile: its running sessions stop, it signs in as another account in your browser, and the same sessions resume under it, with Remote Control on. The way to carry on when an account runs out of usage
+* **remote:** Switch account on a profile: its running sessions stop, it signs in as another account in your browser, and the same sessions resume under it, with Remote Control on. For moving a project between your personal, work and client accounts
 * **remote:** a Remote Control list in the sidebar, with every session connected on your servers, by account
 * **profiles:** a desktop profile lists the Remote Control sessions on its account, and opens them in itself
 * **mcp:** switch_account and finish_sign_in
