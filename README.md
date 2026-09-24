@@ -23,7 +23,7 @@
 </p>
 
 <p align="center">
-  <img alt="A Claude account on a Linux host: running and previous sessions" src="docs/screenshots/remote-profile.png" width="860">
+  <img alt="A project on a Linux host, FOAWA on xjopa1: its running and previous sessions" src="docs/screenshots/remote-profile.png" width="860">
 </p>
 
 Remote Control lets you work with Claude Code from the Claude app on your phone, another Mac or the web.
@@ -32,10 +32,27 @@ when Claude updates, and decide which account it runs under. **Remote Control Co
 server and every account, from your Mac.** And because it's also an MCP server, you can just ask Claude:
 *"restart the claudemulti session on xjopa1"*.
 
+## How to set it up: accounts and projects
+
+- **Add each of your Claude accounts once, as a desktop profile.** One per login, each with its own Claude
+  desktop app on your Mac.
+- **Group each project's sessions into its own profile on a host.** A profile on a server is a Claude Code
+  config folder with its own sign-in, sessions and memory: `brain`, `foawa`, `home-assistant`. Projects can
+  use the same account or different ones.
+- **When an account runs out of usage, switch that project's account.** Its sessions stop, it signs in as
+  the other account, and the same sessions come back, in the same conversations. Nothing moves, and your
+  other projects keep running.
+
+Switching is also the safer way. Signing a Claude Code install out and in again is something Claude Code
+supports. Moving a session's files from one config folder to another isn't: it relies on how Claude Code
+lays out its files today, which can change with any update. Moving sessions between profiles is still
+there, for splitting a project up, but switching the account is the way to carry on when an account hits
+its limit.
+
 ## What you get
 
 ### 🔑 Easy login
-Add a Claude account to a server and sign in **in your Mac's own browser**, with Claude's usual OAuth page.
+Add a profile to a server and sign it in **in your Mac's own browser**, with Claude's usual OAuth page.
 Paste the code it shows into the app, and you're done. You don't need an ssh session or a browser on the
 server, and you won't be copying links out of a headless terminal.
 
@@ -53,13 +70,33 @@ Sessions come back by themselves after the server reboots.
 </table>
 
 ### 📱 Launch right into Remote Control
-One click opens a running session in the Claude app for that account on your Mac. It's already in the
-Claude app on your phone. Need the terminal after all? **Open in Terminal** attaches over ssh.
+One click opens a running session in the Claude app signed in to the same account on your Mac. It's
+already in the Claude app on your phone. Need the terminal after all? **Open in Terminal** attaches over ssh.
 
-### 🔀 Move sessions between accounts
-Hit a usage limit on one account? Move the session to another one, on the same server or between profiles
-on your Mac, and carry on where you left off. Everything goes with it: the transcript, subagents, file
-history, todos and plans.
+Each desktop profile also lists the Remote Control sessions running on its account, on every host, so you
+can see what Claude (Marcus2) can open and jump straight in. It follows the account: switch a project's
+account, and its sessions move to the other desktop profile's list.
+
+<p align="center">
+  <img alt="A desktop profile with the Remote Control sessions running on its account" src="docs/screenshots/desktop-remote-control.png" width="720">
+</p>
+
+### 🔄 Switch accounts, not sessions
+Hit a usage limit? **Switch account…** on the project: its running sessions stop, it signs out, and you
+sign it in as another account in your browser. The same sessions then resume under the new account, in
+the same conversations, with Remote Control on. Nothing moves, and no other project is touched: it's
+Claude Code's own sign-out and sign-in, so it doesn't depend on its internals. If the
+browser signs you in to the same account again, the app notices and says so.
+
+<p align="center">
+  <img alt="Switch FOAWA to another account: its two sessions stop and resume under the new account" src="docs/screenshots/switch-account.png" width="720">
+</p>
+
+### 🔀 Move sessions between profiles
+To split a project up, move a session to another profile, on the same server or between profiles on
+your Mac. Everything goes with it: the transcript, subagents, file history, todos and plans. Claude Code
+doesn't officially support moving sessions, so this works with its files as they're laid out today, with
+backups and checks along the way.
 
 - **Project memory merges.** Notes only one side changed merge by themselves. For notes both sides
   changed, you choose: keep the newer, take either side, or let Claude write a merge you read first.
@@ -85,14 +122,15 @@ back in the same conversation and with Remote Control on.
 
 ### 🖥️ Several servers, several accounts
 Pair as many Linux machines as you like: a VM in the cloud, a box under the desk, a Docker container on
-your NAS. Each shows up in the sidebar under its name, with its accounts as profiles you can color and put
+your NAS. Each shows up in the sidebar under its name, with its projects as profiles you can color and put
 on ⌘1…⌘9.
 
 ### 🤖 Let Claude run it, over MCP
 The app is also an MCP server, so Claude Desktop and Claude Code can do all of this for you: *"restart
-everything on xjopa1 that's waiting on an update"*, *"what's the brain session stuck on?"*, *"move it to
-marcus2"*. It lists profiles, sessions and usage; starts, stops, restarts and renames sessions; reads and
-answers a session's window; and plans and makes moves, merging memory the way you tell it. Claude starts
+everything on xjopa1 that's waiting on an update"*, *"what's the brain session stuck on?"*, *"switch
+foawa to my other account"*. It lists profiles, sessions and usage; starts, stops, restarts and renames
+sessions; reads and answers a session's window; switches a project's account; and plans and makes moves,
+merging memory the way you tell it. Claude starts
 the server itself, so the app doesn't need to be open.
 
 Set it up under **Settings → MCP server**: **Add to my Claude profiles** adds it to every Claude profile on
@@ -177,7 +215,8 @@ between accounts:
 What Remote Control Conductor adds:
 
 1. **One place for accounts and their sessions,** on the Mac and on your servers, side by side.
-2. **Moving a session between accounts,** memory and all.
+2. **Switching a project's account** when one runs out, sessions and all, and moving sessions between
+   profiles, memory and all.
 3. **Remote Control, not another client.** You work in the official Claude apps. This app starts, stops,
    restarts, renames and moves the sessions behind them.
 4. **Built for a Linux host:** a small server with pinned TLS that brings sessions back after a reboot,
