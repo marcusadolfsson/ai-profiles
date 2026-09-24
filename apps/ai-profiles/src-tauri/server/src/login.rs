@@ -21,8 +21,10 @@ use std::time::{Duration, Instant};
 
 use crate::accounts::AccountDir;
 
-/// How long the command gets to print its URL.
-const URL_TIMEOUT: Duration = Duration::from_secs(45);
+/// How long the command gets to print its URL: it takes well under a
+/// second, and this has to stay below the 30s the Mac waits, so a failure
+/// reaches it as one.
+const URL_TIMEOUT: Duration = Duration::from_secs(20);
 /// How long a sign-in waits for its code.
 pub const LOGIN_TTL: Duration = Duration::from_secs(10 * 60);
 /// How long the command gets to finish once the code is in.
@@ -109,6 +111,13 @@ impl Logins {
             .args(["auth", "login", "--claudeai"])
             .current_dir(cwd)
             .env("BROWSER", "/bin/false")
+            // A plain terminal: told it can show links, claude wraps the
+            // sign-in link in an escape sequence (OSC 8), even into a pipe.
+            .env("TERM", "dumb")
+            .env_remove("TERM_PROGRAM")
+            .env_remove("TERM_PROGRAM_VERSION")
+            .env_remove("COLORTERM")
+            .env_remove("FORCE_HYPERLINK")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
@@ -253,7 +262,7 @@ impl Logins {
 fn collect(stream: Box<dyn Read + Send>, output: &Mutex<String>) {
     for line in BufReader::new(stream).split(b'\n').map_while(Result::ok) {
         let mut output = output.lock().unwrap_or_else(PoisonError::into_inner);
-        output.push_str(&String::from_utf8_lossy(&line));
+        output.push_str(&without_escapes(&String::from_utf8_lossy(&line)));
         output.push('\n');
     }
 }
@@ -263,6 +272,43 @@ fn text(output: &Mutex<String>) -> String {
         .lock()
         .unwrap_or_else(PoisonError::into_inner)
         .clone()
+}
+
+/// Pure: `text` without terminal escape sequences: OSC ones (`ESC ]`, such
+/// as a hyperlink, up to BEL or `ESC \`), CSI ones (`ESC [`, colors and
+/// cursor moves), and any other `ESC` and the character after it. A
+/// hyperlink's visible text stays.
+fn without_escapes(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut chars = text.chars().peekable();
+    while let Some(c) = chars.next() {
+        if c != '\u{1b}' {
+            out.push(c);
+            continue;
+        }
+        match chars.next() {
+            Some(']') => {
+                while let Some(c) = chars.next() {
+                    if c == '\u{7}' {
+                        break;
+                    }
+                    if c == '\u{1b}' {
+                        chars.next_if_eq(&'\\');
+                        break;
+                    }
+                }
+            }
+            Some('[') => {
+                for c in chars.by_ref() {
+                    if ('\u{40}'..='\u{7e}').contains(&c) {
+                        break;
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+    out
 }
 
 /// Pure: whether what claude printed after a code says it turned the code
@@ -343,6 +389,19 @@ pub fn login_cwd(state_dir: &Path) -> PathBuf {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn finds_the_link_inside_a_terminal_hyperlink() {
+        let url = "https://claude.com/cai/oauth/authorize?code=true&state=x";
+        let printed = format!(
+            "Opening browser to sign in…\nIf the browser didn't open, visit: \u{1b}]8;;{url}\u{1b}\\{url}\u{1b}]8;;\u{1b}\\\nPaste code here if prompted > "
+        );
+        let clean = without_escapes(&printed);
+        assert_eq!(sign_in_url(&clean).as_deref(), Some(url));
+        assert!(!clean.contains('\u{1b}'));
+        assert_eq!(without_escapes("\u{1b}[1;32mok\u{1b}[0m done"), "ok done");
+        assert_eq!(without_escapes("a\u{1b}]0;title\u{7}b"), "ab");
+    }
 
     #[test]
     fn knows_when_claude_turned_the_code_down() {
