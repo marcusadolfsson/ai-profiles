@@ -64,7 +64,7 @@ history, todos and plans.
 
 <table>
   <tr>
-    <td width="50%"><img alt="Moving a session to another account" src="docs/screenshots/remote-move-session.png"><br><sub>Moving a running session, with the memory decisions up front.</sub></td>
+    <td width="50%"><img alt="Moving a session to another account" src="docs/screenshots/remote-move-session.png"><br><sub>Moving a running session: it exits first, and anything replaced is backed up.</sub></td>
     <td width="50%"><img alt="Archived sessions" src="docs/screenshots/remote-archived.png"><br><sub>Archived sessions, compressed, with restore and delete.</sub></td>
   </tr>
 </table>
@@ -73,6 +73,10 @@ history, todos and plans.
 Claude Code updates itself on the server, but a running session keeps the old version until it restarts.
 The app spots those sessions and **flags them in amber**. **Restart all** brings them up on the new version,
 back in the same conversation and with Remote Control on.
+
+<p align="center">
+  <img alt="Running sessions, two flagged Restart to update, and Restart all · 2 to update" src="docs/screenshots/remote-update-alert.png" width="720">
+</p>
 
 ### 🖥️ Several servers, several accounts
 Pair as many Linux machines as you like: a VM in the cloud, a box under the desk, a Docker container on
