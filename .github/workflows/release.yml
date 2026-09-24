@@ -3,11 +3,12 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      # The fork inherited upstream's v* tags, so its own carry a prefix.
+      - 'conductor-v*'
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing tag to (re-)build, e.g. v0.1.1'
+        description: 'Existing tag to (re-)build, e.g. conductor-v0.5.0'
         required: true
         type: string
 
@@ -107,7 +108,7 @@ jobs:
         with:
           projectPath: apps/ai-profiles
           tagName: ${{ inputs.tag || github.ref_name }}
-          releaseName: 'Remote Control Conductor ${{ inputs.tag || github.ref_name }}'
+          releaseName: 'Remote Control Conductor v__VERSION__'
           releaseBody: |
             Manage Claude Code for Remote Control, across several servers and accounts. See the [README](https://github.com/marcusadolfsson/remote-control-conductor#readme).
 
