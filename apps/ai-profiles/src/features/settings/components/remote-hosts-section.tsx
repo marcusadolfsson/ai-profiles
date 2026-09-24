@@ -93,9 +93,9 @@ function SetupGuide({ initiallyOpen, onPair }: { initiallyOpen: boolean; onPair:
           </GuideStep>
           <GuideStep number={2} title="Install ai-profiles-server">
             <p className="text-muted">A prebuilt binary, for x86_64 or arm64 Linux:</p>
-            <CopyLine text="mkdir -p ~/.local/bin && curl -fsSL https://github.com/bartekczyz/ai-profiles/releases/latest/download/ai-profiles-server-$(uname -m)-linux -o ~/.local/bin/ai-profiles-server && chmod +x ~/.local/bin/ai-profiles-server" />
+            <CopyLine text="mkdir -p ~/.local/bin && curl -fsSL https://github.com/marcusadolfsson/ai-profiles-remote/releases/latest/download/ai-profiles-server-$(uname -m)-linux -o ~/.local/bin/ai-profiles-server && chmod +x ~/.local/bin/ai-profiles-server" />
             <p className="text-muted">Or built from source, which takes a Rust toolchain (rustup.rs):</p>
-            <CopyLine text="cargo install --locked --git https://github.com/bartekczyz/ai-profiles ai-profiles-server" />
+            <CopyLine text="cargo install --locked --git https://github.com/marcusadolfsson/ai-profiles-remote ai-profiles-server" />
           </GuideStep>
           <GuideStep number={3} title="Run its setup">
             <p className="text-muted">
