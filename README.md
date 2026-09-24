@@ -4,8 +4,6 @@
 
 <h1 align="center">Remote Control Conductor</h1>
 
-<p align="center"><sub>Formerly ai-profiles-remote.</sub></p>
-
 <p align="center">
   <b>Manage Claude Code CLI for Remote Control, across several servers and accounts.</b><br>
   One Mac app to sign in, start, stop, restart and move Claude Code sessions on your Linux machines,<br>
