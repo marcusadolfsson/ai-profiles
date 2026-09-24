@@ -6,7 +6,8 @@
 
 <p align="center">
   <b>Keep Claude Code running on your servers, and work with it from anywhere.</b><br>
-  A Mac app and a small Linux server for Claude Code CLI sessions with Remote Control.
+  A Mac app and a small Linux server for Claude Code CLI sessions with Remote Control,<br>
+  across your projects and your personal, work and client accounts.
 </p>
 
 <p align="center">
@@ -26,8 +27,7 @@
 I run Claude Code on a few Linux machines: a VM in the cloud, a box at the office, a container on my
 NAS. With Remote Control I can pick those sessions up from the Claude app on my phone or my Mac, which is
 wonderful. But someone still has to start them, keep them alive, restart them when Claude Code updates,
-and deal with it when an account runs out of usage halfway through the day. That someone was me, in a lot
-of ssh sessions.
+and keep track of which account each one runs under. That someone was me, in a lot of ssh sessions.
 
 Remote Control Conductor does that part. A small server runs on each Linux machine, and the Mac app talks
 to all of them, so every session on every server is in one sidebar. You start, stop and restart them from
@@ -38,17 +38,21 @@ its own.
 
 ## How it's organised
 
+It's built for working on several projects with different Claude accounts: a personal account, a work
+account, an account for a particular client or project.
+
 On a server, each **profile** is a project: its own Claude Code folder, with its own sessions, memory
-and sign-in. Mine are called things like `brain`, `foawa` and `home-assistant`. A project can be signed
-in to any of your Claude accounts, and several projects can share one.
+and sign-in. Mine are called things like `brain`, `foawa` and `home-assistant`. Each project is signed in
+to whichever account it belongs to, and several projects can share one.
 
 On your Mac, each of your Claude accounts gets a **desktop profile**, its own Claude app. That's where a
 server session on that account opens when you click *Open in Claude*.
 
-When an account runs out, you don't move anything. You **switch the project's account**: its sessions
-stop, it signs in as your other account, and the same sessions come back in the same conversations, with
-Remote Control on. Your other projects don't notice. Signing out and in is something Claude Code supports,
-so this doesn't depend on how it happens to store its files, which makes it the safe way to carry on.
+To move a project to a different account, say from personal to work, you don't move anything. You
+**switch the project's account**: its sessions stop, it signs in as the other account, and the same
+sessions come back in the same conversations, with Remote Control on. Your other projects don't notice.
+Signing out and in is something Claude Code supports, so this doesn't depend on how it happens to store
+its files.
 
 ## What it's like to use
 
@@ -79,8 +83,8 @@ sessions on its own account too.
 page in your Mac's browser. You sign in there and paste the code back into the app. No ssh, no browser on
 the server, no copying long links out of a terminal.
 
-**When an account runs out.** *Switch account…* on the project stops its sessions, signs it in as the
-other account, and resumes them. If your browser was still signed in to the old account, the app notices
+**Changing a project's account.** *Switch account…* on the project stops its sessions, signs it in as
+the other account, and resumes them. If your browser was still signed in to the old account, the app notices
 and tells you, rather than quietly switching you to the same one.
 
 <p align="center">
@@ -101,8 +105,8 @@ its tmux window right in the app and answer it there, or open it in Terminal ove
 **Splitting a project up.** You can also move a session to another project on the same server, from the
 session's ⋯ menu. The transcript, subagents, file history and plans go with it, and project memory is
 merged, with you deciding about notes both sides changed. Claude Code doesn't officially support moving
-sessions, so this works with its files as they're laid out today, with backups along the way. For a
-tired account, switching is the better choice.
+sessions, so this works with its files as they're laid out today, with backups along the way. To change
+the account a whole project uses, switching is the better choice.
 
 <table>
   <tr>
@@ -115,7 +119,7 @@ tired account, switching is the better choice.
 
 The app is also an MCP server, so you can ask Claude Desktop or Claude Code to do any of this: *"restart
 everything on xjopa1 that's waiting on an update"*, *"what's the brain session stuck on?"*, *"switch foawa
-to my other account"*. Claude starts the server itself when it needs it, so the app doesn't even have to be
+to my work account"*. Claude starts the server itself when it needs it, so the app doesn't even have to be
 open.
 
 To set it up, go to **Settings → MCP server** and click *Add to my Claude profiles*. Or add it by hand:
