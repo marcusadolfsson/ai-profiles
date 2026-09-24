@@ -1,6 +1,6 @@
 import type { RemoteControlSession } from '../api/use-remote'
 
-import { Radio } from 'lucide-react'
+import { Laptop } from 'lucide-react'
 
 import { PaneLayout } from '@/components/pane-layout'
 import { SessionRowBase, sessionPanelClasses } from '@/features/profiles/components/session-row-base'
@@ -19,7 +19,7 @@ export function RemoteControlSidebarRow({ selected, onSelect }: { selected: bool
   return (
     <SidebarProfileRow
       name="Remote Control"
-      glyph={<Radio aria-hidden strokeWidth={1.75} className="h-3 w-3 text-blue" />}
+      glyph={<Laptop aria-hidden strokeWidth={1.75} className="h-3 w-3 text-blue" />}
       swatch={<span aria-hidden />}
       trailing={
         <span className="text-[10.5px] text-muted-strong" title={`${sessions.length} connected`}>

@@ -7,7 +7,7 @@ import { ariaKeyshortcutsFor, Button, Kbd, Skeleton } from '@/design'
 import { importableAppsFrom, useMigration } from '@/features/migration/api/use-migration'
 import { useMigrationBackups } from '@/features/migration/api/use-migration-backups'
 import { MigrationBackupsList } from '@/features/migration/components/migration-backups-list'
-import { appSpecs } from '@/lib/app-registry'
+import { appSpecs, shownAppIds } from '@/lib/app-registry'
 import { formatBytes } from '@/lib/format-bytes'
 
 type Props = {
@@ -44,7 +44,7 @@ export function DataSection({ onReimport }: Props) {
     claude: claudeMigration.existing,
     codex: codexMigration.existing,
   }
-  const importable = importableAppsFrom(existingByApp)
+  const importable = importableAppsFrom(existingByApp).filter((app) => shownAppIds.includes(app))
 
   return (
     <section className="mb-8">

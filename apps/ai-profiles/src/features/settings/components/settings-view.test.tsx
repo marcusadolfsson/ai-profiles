@@ -18,6 +18,13 @@ function renderSettings(ui: ReactElement) {
   )
 }
 
+// These tests cover ChatGPT, which the app hides for now (SHOW_CHATGPT); the
+// support underneath is kept, so it's shown here.
+vi.mock('@/lib/app-registry', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/app-registry')>('@/lib/app-registry')
+  return { ...actual, shownAppIds: actual.appIds }
+})
+
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }))
 vi.mock('@tauri-apps/api/app', () => ({ getVersion: vi.fn().mockResolvedValue('0.1.0') }))
 

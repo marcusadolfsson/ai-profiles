@@ -9,7 +9,7 @@ import { Button, Skeleton, StatusDot } from '@/design'
 import { useAppMetadata } from '@/features/about/api/use-app-metadata'
 import { useDependencies } from '@/features/dependencies/api/use-dependencies'
 import { type UpdaterStatus, useUpdater } from '@/features/updater/api/use-updater'
-import { appIds, appSpecs } from '@/lib/app-registry'
+import { appSpecs, shownAppIds } from '@/lib/app-registry'
 import { detectShell, installPathHook } from '@/lib/commands'
 
 const rcDisplay: Record<Shell, string> = {
@@ -52,7 +52,7 @@ const MISSING_DETAIL = '—'
 const REFRESH_FLASH_MS = 1500
 
 function buildAppRows(dependencies: Dependencies): Array<Row> {
-  return appIds.flatMap((id) => {
+  return shownAppIds.flatMap((id) => {
     const spec = appSpecs[id]
     const deps = dependencies.apps[id]
     return [

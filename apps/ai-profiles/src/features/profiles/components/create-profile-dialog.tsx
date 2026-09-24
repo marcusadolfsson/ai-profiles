@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { Button, Dialog, Kbd, useToast } from '@/design'
 // cross-feature: a remote profile's name has to be free on its server
 import { useRemoteAccounts } from '@/features/remote/api/use-remote'
-import { appIds, appSpecs } from '@/lib/app-registry'
+import { appSpecs, shownAppIds } from '@/lib/app-registry'
 import { isValidHexColor, presetColors } from '@/lib/colors'
 import { extractErrorMessage } from '@/lib/extract-error-message'
 
@@ -61,7 +61,9 @@ export function CreateProfileDialog({
   // when they change the app.
   const [dockIconChoice, setDockIconChoice] = useState<boolean | null>(null)
 
-  const installedApps = appIds.filter((id) => dependencies.apps[id].guiInstalled || dependencies.apps[id].cliInstalled)
+  const installedApps = shownAppIds.filter(
+    (id) => dependencies.apps[id].guiInstalled || dependencies.apps[id].cliInstalled,
+  )
   // Pre-select when exactly one app is installed; otherwise leave empty so the
   // user makes a deliberate choice.
   const defaultApp: ProfileType =

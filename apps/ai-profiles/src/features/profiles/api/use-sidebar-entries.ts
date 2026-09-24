@@ -1,7 +1,7 @@
 import type { AppId } from '@/lib/app-registry'
 import type { DefaultEntry, ExistingInstallInfo, SidebarEntry } from '@/lib/types'
 
-import { appIds, appSpecs } from '@/lib/app-registry'
+import { appIds, appSpecs, shownAppIds } from '@/lib/app-registry'
 import { useAppState } from '@/lib/app-state/use-app-state'
 
 import { useMigration } from '../../migration/api/use-migration'
@@ -28,7 +28,7 @@ export function useSidebarEntries(): Array<SidebarEntry> {
   const defaults = makeDefaultEntries(existingByApp, appState.defaultProfileNames)
   const managed: Array<SidebarEntry> = profiles.map((profile) => ({ kind: 'managed', profile }))
   const defaultEntries: Array<SidebarEntry> = defaults.map((entry) => ({ kind: 'default', entry }))
-  return [...defaultEntries, ...managed]
+  return [...defaultEntries, ...managed].filter((entry) => shownAppIds.includes(appFromEntry(entry)))
 }
 
 /**

@@ -7,7 +7,7 @@ import { Check, Info } from 'lucide-react'
 import { Button, cn } from '@/design'
 import { Input } from '@/design/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/design/ui/select'
-import { type AppSpec, appIds, appSpecs } from '@/lib/app-registry'
+import { type AppSpec, appSpecs, shownAppIds } from '@/lib/app-registry'
 import { presetColors } from '@/lib/colors'
 
 import { ColorSwatchPicker } from './color-swatch-picker'
@@ -347,7 +347,7 @@ function TypeField({
           <SelectValue placeholder="Choose an app" />
         </SelectTrigger>
         <SelectContent>
-          {appIds.map((id) => (
+          {shownAppIds.map((id) => (
             <SelectItem key={id} disabled={!installedApps.includes(id)} value={id}>
               {appSpecs[id].displayName}
             </SelectItem>

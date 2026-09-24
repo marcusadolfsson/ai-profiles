@@ -174,6 +174,17 @@ export const appSpecs: Record<AppId, AppSpec> = { claude, codex }
 export const appIds: ReadonlyArray<AppId> = ['claude', 'codex']
 
 /**
+ * Whether ChatGPT (and Codex) show in the app: the sidebar, a new profile's
+ * type, and Settings. Off for now in Remote Control Conductor, which is about
+ * Claude; the support underneath stays, and existing ChatGPT profiles keep
+ * their files and launchers.
+ */
+export const SHOW_CHATGPT = false
+
+/** The apps the app offers and lists, in `appIds` order. */
+export const shownAppIds: ReadonlyArray<AppId> = appIds.filter((id) => id !== 'codex' || SHOW_CHATGPT)
+
+/**
  * The per-profile CLI command for a managed profile, e.g. `claude-work`
  * for a Claude profile slugged `work`, `codex-work` for a ChatGPT one. Single
  * source of truth for the wrapper command — used by the surface cards,

@@ -13,6 +13,13 @@ import { renderWithQuery } from '@/test/render-with-query'
 
 import { CreateProfileDialog } from './create-profile-dialog'
 
+// These tests cover ChatGPT, which the app hides for now (SHOW_CHATGPT); the
+// support underneath is kept, so it's shown here.
+vi.mock('@/lib/app-registry', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/app-registry')>('@/lib/app-registry')
+  return { ...actual, shownAppIds: actual.appIds }
+})
+
 vi.mock('@/lib/commands', async () => {
   const actual = await vi.importActual<typeof import('@/lib/commands')>('@/lib/commands')
   // The server a remote profile is made on already has `taken`.
