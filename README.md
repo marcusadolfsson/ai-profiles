@@ -75,13 +75,16 @@ Sessions come back by themselves after the server reboots.
 One click opens a running session in the Claude app signed in to the same account on your Mac. It's
 already in the Claude app on your phone. Need the terminal after all? **Open in Terminal** attaches over ssh.
 
-Each desktop profile also lists the Remote Control sessions running on its account, on every host, so you
-can see what Claude (Marcus2) can open and jump straight in. It follows the account: switch a project's
-account, and its sessions move to the other desktop profile's list.
+**Remote Control** in the sidebar lists every session connected on your servers, by the account it runs
+on, each a click from opening. Each desktop profile lists the ones on its own account too, and opens them
+in itself. Both follow the account: switch a project's account, and its sessions move with it.
 
-<p align="center">
-  <img alt="A desktop profile with the Remote Control sessions running on its account" src="docs/screenshots/desktop-remote-control.png" width="720">
-</p>
+<table>
+  <tr>
+    <td width="50%"><img alt="The Remote Control page: every connected session on your servers, by account" src="docs/screenshots/remote-control-overview.png"><br><sub>Every connected session on your servers, by account.</sub></td>
+    <td width="50%"><img alt="A desktop profile with the Remote Control sessions running on its account" src="docs/screenshots/desktop-remote-control.png"><br><sub>A desktop profile, with the sessions on its account.</sub></td>
+  </tr>
+</table>
 
 ### 🔄 Switch accounts, not sessions
 Hit a usage limit? **Switch account…** on the project: its running sessions stop, it signs out, and you
@@ -118,7 +121,7 @@ The app spots those sessions and **flags them in amber**. **Restart all** brings
 back in the same conversation and with Remote Control on.
 
 <p align="center">
-  <img alt="Running sessions, two flagged Restart to update, and Restart all · 2 to update" src="docs/screenshots/remote-update-alert.png" width="720">
+  <img alt="Two running sessions flagged Restart to update, and Restart all · 2 to update" src="docs/screenshots/remote-update-alert.png" width="720">
 </p>
 
 ### 🖥️ Several servers, several accounts
