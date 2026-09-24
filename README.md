@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img alt="A project on a Linux server, FOAWA on xjopa1, with two running sessions waiting on an update" src="docs/screenshots/remote-profile.png" width="860">
+  <img alt="A profile on a Linux server, FOAWA on xjopa1, with two running sessions waiting on an update" src="docs/screenshots/remote-profile.png" width="860">
 </p>
 
 ## Why
@@ -41,22 +41,22 @@ its own.
 It's built for working on several projects with different Claude accounts: a personal account, a work
 account, an account for a particular client or project.
 
-On a server, each **profile** is a project: its own Claude Code folder, with its own sessions, memory
-and sign-in. Mine are called things like `brain`, `foawa` and `home-assistant`. Each project is signed in
-to whichever account it belongs to, and several projects can share one.
-
 On your Mac, each of your Claude accounts gets a **desktop profile**, its own Claude app. That's where a
-server session on that account opens when you click *Open in Claude*.
+server session on that account opens when you click *Open in Claude*. Claude on iOS natively supports multiple 
+accounts.
 
-To move a project to a different account, say from personal to work, you don't move anything. You
-**switch the project's account**: its sessions stop, it signs in as the other account, and the same
-sessions come back in the same conversations, with Remote Control on. Your other projects don't notice.
+On a server, each **profile** gets its own Claude Code folder, with its own sessions, memory
+and sign-in. Mine are called things like `brain`, `foawa` and `home-assistant`. Several profiles can share one account.
+
+To move a profile to a different Claude account, say from personal to work, you don't move anything. You
+**switch the profiles's account**: its sessions stop, it signs in as the other account, and the same
+sessions come back in the same conversations, with Remote Control on. Your other profiles don't notice.
 Signing out and in is something Claude Code supports, so this doesn't depend on how it happens to store
 its files.
 
 ## What it's like to use
 
-**Starting a session.** Pick a project, click *New session*, choose a folder on the server, and it starts
+**Starting a session.** Pick a profile, click *New session*, choose a folder on the server, and it starts
 in its own tmux window with Remote Control already on. It shows up in the Claude app on your phone a few
 seconds later. If the server reboots, the sessions that were running come back by themselves.
 
@@ -79,11 +79,11 @@ sessions on its own account too.
   </tr>
 </table>
 
-**Signing in.** Adding a project to a server, or switching its account, opens Claude's usual sign-in
+**Signing in.** Adding a profile to a server, or switching its account, opens Claude's usual sign-in
 page in your Mac's browser. You sign in there and paste the code back into the app. No ssh, no browser on
 the server, no copying long links out of a terminal.
 
-**Changing a project's account.** *Switch account…* on the project stops its sessions, signs it in as
+**Changing a profiles's account.** *Switch account…* on the profile stops its sessions, signs it in as
 the other account, and resumes them. If your browser was still signed in to the old account, the app notices
 and tells you, rather than quietly switching you to the same one.
 
@@ -102,11 +102,11 @@ the new version, in the same conversations.
 **When something's stuck.** Sometimes a session stops at a question before it gets going. You can see
 its tmux window right in the app and answer it there, or open it in Terminal over ssh.
 
-**Splitting a project up.** You can also move a session to another project on the same server, from the
+**Splitting a profile up.** You can also move a session to another profile on the same server, from the
 session's ⋯ menu. The transcript, subagents, file history and plans go with it, and project memory is
 merged, with you deciding about notes both sides changed. Claude Code doesn't officially support moving
 sessions, so this works with its files as they're laid out today, with backups along the way. To change
-the account a whole project uses, switching is the better choice.
+the account a whole profile uses, switching is the better choice.
 
 <table>
   <tr>
