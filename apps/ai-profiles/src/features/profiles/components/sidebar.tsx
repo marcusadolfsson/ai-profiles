@@ -68,6 +68,11 @@ type Props = {
    * same hairline separator as the app groups.
    */
   renderExtraSections?: (query: string) => ReactNode
+  /**
+   * Show the app glyph on every local row even with one app listed: when the
+   * remote profiles below show theirs, so the two line up.
+   */
+  alwaysShowAppGlyphs?: boolean
 }
 
 export function Sidebar({
@@ -79,6 +84,7 @@ export function Sidebar({
   onSettings,
   onReorder,
   renderExtraSections,
+  alwaysShowAppGlyphs = false,
 }: Props) {
   const [query, setQuery] = useState('')
 
@@ -86,7 +92,7 @@ export function Sidebar({
   // The per-row app glyph only earns its column once the sidebar actually
   // spans more than one app — otherwise it would repeat the same mark on every
   // row and spend width the profile names need.
-  const showAppGlyphs = groups.length > 1
+  const showAppGlyphs = alwaysShowAppGlyphs || groups.length > 1
 
   // Flat managed list in store order — the source of truth for the ⌘N chip
   // index and for rebuilding the full order after a per-section reorder.

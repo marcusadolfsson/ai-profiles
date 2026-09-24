@@ -471,6 +471,7 @@ function AppContent() {
             onReorder={(ids) => {
               void profiles.reorder(ids)
             }}
+            alwaysShowAppGlyphs={remoteHosts.length > 0}
             renderExtraSections={(query) => [
               remoteHosts.length > 0 && 'remote control'.includes(query.trim().toLowerCase()) ? (
                 <RemoteControlSidebarRow

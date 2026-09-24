@@ -16,19 +16,23 @@ import { OpenInClaudeButton } from './remote-account-detail'
  */
 export function RemoteControlSidebarRow({ selected, onSelect }: { selected: boolean; onSelect: () => void }) {
   const sessions = useAllRemoteControlSessions()
+  // A section of its own, so the sidebar's hairlines set it apart from the
+  // profiles above and the hosts below.
   return (
-    <SidebarProfileRow
-      name="Remote Control"
-      glyph={<Laptop aria-hidden strokeWidth={1.75} className="h-3 w-3 text-blue" />}
-      swatch={<span aria-hidden />}
-      trailing={
-        <span className="text-[10.5px] text-muted-strong" title={`${sessions.length} connected`}>
-          {sessions.length}
-        </span>
-      }
-      selected={selected}
-      onSelect={onSelect}
-    />
+    <section aria-label="Remote Control" className="flex flex-col gap-px">
+      <SidebarProfileRow
+        name="Remote Control"
+        glyph={<Laptop aria-hidden strokeWidth={1.75} className="h-3 w-3 text-blue" />}
+        swatch={<span aria-hidden />}
+        trailing={
+          <span className="text-[10.5px] text-muted-strong" title={`${sessions.length} connected`}>
+            {sessions.length}
+          </span>
+        }
+        selected={selected}
+        onSelect={onSelect}
+      />
+    </section>
   )
 }
 
