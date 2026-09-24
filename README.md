@@ -77,6 +77,83 @@ Each profile's detail page shows that profile's current quota utilization alongs
 
 **Codex profiles** show two meters: the 5-hour window and the weekly window. The card drives `codex app-server` over its JSON-RPC protocol (`account/rateLimits/read`) — no separate auth is needed because the app-server reads from the profile's own `CODEX_HOME/auth.json` directly.
 
+## Sessions
+
+A Claude profile's page lists its sessions, from the CLI and from the desktop app's Code tab alike: title, folder, when it was last used, and whether it's open right now.
+
+- **Move** a session to another profile. Everything that belongs to it goes: the transcript, subagents, file history, todos and the plan it follows.
+  - It also lands in the destination's desktop app, which lists it from then on.
+  - Anything it replaces is backed up first.
+- **Project memory** is merged, not overwritten.
+  - A note only one profile changed since the last move merges by itself.
+  - A note both changed is yours to decide: keep the newer, take either side, or a merge Claude writes (no tools, safe mode) that you read before using.
+- **Afterwards**, the copy left behind can be archived (compressed, and restorable), deleted once the moved copy checks out identical, or kept.
+- **Archive** a session to take it out of the list, then **restore** it, or delete the archive for good.
+
+The dialog shows each step as it runs, and quits a desktop app for you when it holds the session open.
+
+## Remote hosts
+
+Claude Code accounts on a Linux machine, one `CLAUDE_CONFIG_DIR` each, show up in the sidebar as profiles under the machine's name. Their sessions run in tmux with Remote Control on, so they keep going with nothing attached and follow you to the Claude app on your phone.
+
+<p align="center">
+  <img alt="A remote profile: running and previous sessions" src="docs/screenshots/remote-profile.png" width="820">
+</p>
+
+From the Mac you can:
+
+- **Start, resume, stop and restart** sessions, and rename them. The name follows the session to Remote Control and tmux.
+- **See and answer a session's window** from inside ai-profiles, when it's waiting on a question. You can also attach to it in Terminal over ssh.
+- **Move a session to another account** on the host, with the same memory merge as on this Mac.
+- **Archive, restore and delete archives.** Archives are compressed; a 300 MB transcript keeps in about 100.
+- **Add an account and sign it in** from here (the sign-in link opens on the Mac). You can also sign an account out, rename it, give it a color and ⌘-number, or delete it.
+- **Open a Remote Control session** in the Claude app of the matching profile on this Mac.
+
+<table>
+  <tr>
+    <td width="50%"><img alt="A session's tmux window inside ai-profiles" src="docs/screenshots/remote-session-window.png"><br><sub>A session's window, live, inside ai-profiles.</sub></td>
+    <td width="50%"><img alt="New session on a remote host" src="docs/screenshots/remote-new-session.png"><br><sub>New session: a folder on the host, a name, trust.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img alt="Moving a session to another account" src="docs/screenshots/remote-move-session.png"><br><sub>Moving a running session: exited first, then archived, deleted or kept.</sub></td>
+    <td width="50%"><img alt="Archived sessions" src="docs/screenshots/remote-archived.png"><br><sub>Archived sessions, compressed, with restore and delete.</sub></td>
+  </tr>
+</table>
+
+### Setting up a host
+
+The machine needs **tmux 3.0 or newer** and **Claude Code**. The server is a single static binary for x86_64 or arm64 Linux, attached to every [release](https://github.com/bartekczyz/ai-profiles/releases/latest):
+
+```sh
+sudo apt install tmux
+curl -fsSL https://claude.ai/install.sh | bash
+mkdir -p ~/.local/bin && curl -fsSL https://github.com/bartekczyz/ai-profiles/releases/latest/download/ai-profiles-server-$(uname -m)-linux -o ~/.local/bin/ai-profiles-server && chmod +x ~/.local/bin/ai-profiles-server
+ai-profiles-server setup
+```
+
+Or build it from source, with a Rust toolchain ([rustup.rs](https://rustup.rs)):
+`cargo install --locked --git https://github.com/bartekczyz/ai-profiles ai-profiles-server`.
+
+`setup` walks through it step by step:
+
+1. It checks tmux and Claude Code, and finds your accounts under `~/.claude-accounts/`.
+2. It asks which networks may connect. Tailscale and WireGuard peers can by default; a LAN only if you say so.
+3. It installs a systemd user service that survives a reboot.
+4. It prints a pairing code. Paste that into ai-profiles under **Settings → Remote hosts → Pair a host**.
+
+The same steps are in the app, under **How to set up a host**. Later, `ai-profiles-server doctor` checks the install, and `ai-profiles-server pair` makes a new code.
+
+<p align="center">
+  <img alt="Settings, Remote hosts, with the setup guide" src="docs/screenshots/remote-setup-guide.png" width="720">
+</p>
+
+### How it connects
+
+- **Transport:** the server speaks HTTPS (TLS 1.3) with its own certificate. The pairing code carries the certificate's fingerprint, and the Mac trusts that certificate and no other.
+- **Pairing and tokens:** each code works once, for 10 minutes. The token it's exchanged for lives in the Keychain; the server keeps only its hash, and `ai-profiles-server revoke` cuts a Mac off.
+- **Who can connect:** only addresses you allow, by default Tailscale, WireGuard and the machine itself. Everyone else is dropped before TLS.
+- **Running commands:** the server starts `claude` and tmux with argument lists, never through a shell. It reads and types only into windows it opened, and starts new sessions only in the folders it's told it may use.
+
 ## Onboarding
 
 **First launch.** A welcome dialog appears once; after that you land on the empty state with a single "+ New profile" CTA. There is no auto-prompt — the next step is on you.
