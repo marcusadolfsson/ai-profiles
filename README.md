@@ -43,7 +43,7 @@ Sessions come back by themselves after the server reboots.
 <table>
   <tr>
     <td width="50%"><img alt="New session on a remote host" src="docs/screenshots/remote-new-session.png"><br><sub>A new session: a folder on the host, a name, and the folder trusted for you.</sub></td>
-    <td width="50%"><img alt="A session's tmux window inside the app" src="docs/screenshots/remote-session-window.png"><br><sub>A session waiting on a question? Its window, live, inside the app.</sub></td>
+    <td width="50%"><img alt="A session's tmux window inside the app" src="docs/screenshots/remote-session-window.png"><br><sub>The session's tmux window, live in the app: see and answer whatever is holding up a session that didn't start cleanly, without opening ssh.</sub></td>
   </tr>
 </table>
 
