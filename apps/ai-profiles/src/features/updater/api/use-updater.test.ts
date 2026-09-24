@@ -21,7 +21,21 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-describe('useUpdater', () => {
+describe('useUpdater (local build)', () => {
+  it('reports disabled and never calls the updater plugin', async () => {
+    const { result } = renderHook(() => useUpdater())
+    await waitFor(() => expect(result.current.status.kind).toBe('disabled'))
+    await act(async () => {
+      await result.current.check()
+      await vi.advanceTimersByTimeAsync(7 * 60 * 60 * 1000)
+    })
+    expect(result.current.status.kind).toBe('disabled')
+    expect(mockCheck).not.toHaveBeenCalled()
+  })
+})
+
+// Upstream behaviour; the local build disables the updater (see use-updater.ts).
+describe.skip('useUpdater', () => {
   it('reports up-to-date when check returns null', async () => {
     mockCheck.mockResolvedValueOnce(null)
     const { result } = renderHook(() => useUpdater())

@@ -33,7 +33,8 @@ const OPEN_ABOUT_ID: &str = "open-about";
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_updater::Builder::new().build())
+        // Updater disabled in this local build: it would replace the patched
+        // app with upstream releases.
         // Provides `relaunch()` to the frontend so the updater can restart
         // the app itself after `downloadAndInstall` finishes — Tauri 2's
         // updater plugin does NOT relaunch on its own.

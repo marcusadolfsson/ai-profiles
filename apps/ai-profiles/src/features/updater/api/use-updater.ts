@@ -11,12 +11,20 @@ type UpdaterStatus =
   | { kind: 'available'; update: Update }
   | { kind: 'installing' }
   | { kind: 'error'; message: string }
+  | { kind: 'disabled' }
+
+// Local build: the Rust updater plugin isn't registered, so never call it.
+const updatesDisabled = true
 
 const sixHoursMs = 6 * 60 * 60 * 1000
 
 type StatusSetter = (next: UpdaterStatus) => void
 
 async function runCheckInto(setStatus: StatusSetter): Promise<void> {
+  if (updatesDisabled) {
+    setStatus({ kind: 'disabled' })
+    return
+  }
   setStatus({ kind: 'checking' })
   try {
     const update = await check()

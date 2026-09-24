@@ -33,7 +33,8 @@ beforeEach(() => {
   showSpy.mockReset()
 })
 
-describe('UpdateToastTrigger', () => {
+// The local build disables the updater, so there is never an update to toast.
+describe.skip('UpdateToastTrigger', () => {
   it('does not toast when up-to-date', async () => {
     mockCheck.mockResolvedValueOnce(null)
     render(

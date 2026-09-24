@@ -39,6 +39,8 @@ function describeUpdaterStatus(status: UpdaterStatus): { tone: StatusTone; detai
       return { tone: 'warning', detail: 'Installing…' }
     case 'error':
       return { tone: 'warning', detail: status.message }
+    case 'disabled':
+      return { tone: 'neutral', detail: 'Disabled in this build' }
   }
 }
 
